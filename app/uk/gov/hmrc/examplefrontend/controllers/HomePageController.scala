@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
-import play.api.mvc.MessagesControllerComponents
-import uk.gov.hmrc.examplefrontend.views.html.{HomePage}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.views.html.HomePage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{Inject, Singleton}
 
-case class HomePageController @Inject()(
+@Singleton
+class HomePageController @Inject()(
    mcc: MessagesControllerComponents,
    homePage: HomePage
    )
   extends FrontendController(mcc){
 
-  def homepage = Action.async { implicit request =>
-    Future.successful(Ok(homePage()))
+  def homepage: Action[AnyContent] = Action { implicit request =>
+    Ok(homePage())
   }
 
 }

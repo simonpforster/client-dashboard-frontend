@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-case class LoginController @Inject()(
+class LoginController @Inject()(
   ws: WSClient,
   mcc: MessagesControllerComponents,
   loginPage: LoginPage,
@@ -36,12 +36,12 @@ case class LoginController @Inject()(
     extends FrontendController(mcc) with I18nSupport{
 
 
-  def login: Action[AnyContent] = Action.async { implicit request =>
+  def login: Action[AnyContent] = Action { implicit request =>
     val form: Form[User] = UserForm.form.fill(User("", ""))
-    Future.successful(Ok(loginPage(form)))
+    Ok(loginPage(form))
   }
 
-  def loginSubmit = Action.async { implicit request =>
+  def loginSubmit: Action[AnyContent] = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(loginPage(formWithErrors)))

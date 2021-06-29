@@ -95,7 +95,7 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
       session(result).get("crn") shouldBe Some("testCrn")
     }
 
-    "redirect to the login page" in {
+    "return Unauthorized" in {
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
       lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
       lazy val result = newController.loginSubmit(fakeRequestSubmit)
