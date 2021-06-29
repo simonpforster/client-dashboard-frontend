@@ -23,12 +23,14 @@ import play.api.http.Status
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{defaultAwaitTimeout, session, status}
+import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, session, status}
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
+
 
 class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite  {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
+
 
   object testDashboardController extends DashboardController (
     mcc,
@@ -36,11 +38,16 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
   )
 
   "DashboardController dashboardMain() GET " should {
-    val fakeRequest = FakeRequest("GET", "/")
+
+    val fakeRequest = FakeRequest("GET", "/dashboard")
+      .withSession("name" -> "John Doe" + "crn" -> "asd3748" )
+
 
     "return status Ok" in {
       val result = testDashboardController.dashboardMain(fakeRequest)
       status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
+      contentAsString(result) should include ("Dashboard")
     }
   }
 

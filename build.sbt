@@ -1,10 +1,7 @@
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
-
 val appName = "example-frontend"
-
 val silencerVersion = "1.7.3"
-
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(
@@ -24,7 +21,10 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
       "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
-    )
+    ),
+    libraryDependencies += "org.scalatestplus" %% "mockito-3-4" % "3.2.5.0",
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.5",
+    libraryDependencies += "org.jsoup" % "jsoup" % "1.13.1"
     // ***************
   )
   .settings(publishingSettings: _*)
