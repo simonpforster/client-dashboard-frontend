@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.examplefrontend.models
+package uk.gov.hmrc.examplefrontend.controllers
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.views.html.HomePage
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
-case class Client (
-                    crn: String,
-                    name: String,
-                    businessName: String,
-                    contactNumber: String,
-                    propertyNumber: Int,
-                    postcode: String,
-                    businessType: String,
-                    arn: Option[String] = None)
+import javax.inject.{Inject, Singleton}
 
-object Client {
-  implicit val format: OFormat[Client] = Json.format[Client]
+@Singleton
+class HomePageController @Inject()(
+   mcc: MessagesControllerComponents,
+   homePage: HomePage
+   )
+  extends FrontendController(mcc){
+
+  def homepage: Action[AnyContent] = Action { implicit request =>
+    Ok(homePage())
+  }
+
 }
+

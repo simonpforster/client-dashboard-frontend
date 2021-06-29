@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.examplefrontend.controllers
+package uk.gov.hmrc.examplefrontend.models
 
-import uk.gov.hmrc.examplefrontend.views.html.HelloWorldPage
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import play.api.data.Form
+import play.api.data.Forms.{mapping, nonEmptyText}
 
-@Singleton
-class HelloWorldController @Inject()(
-  mcc: MessagesControllerComponents,
-  helloWorldPage: HelloWorldPage)
-    extends FrontendController(mcc) {
 
-  val helloWorld: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(helloWorldPage()))
-  }
+case class User(crn: String, password: String)
 
+object UserForm {
+  val form: Form[User] =
+    Form(
+      mapping(
+        "crn" -> nonEmptyText,
+        "password" -> nonEmptyText
+      )(User.apply)(User.unapply)
+    )
 }
+
+
+

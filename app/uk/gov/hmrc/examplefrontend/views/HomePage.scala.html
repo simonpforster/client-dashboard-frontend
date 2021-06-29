@@ -1,0 +1,17 @@
+@this(layout: Layout)
+
+@()(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("example-frontend")) {
+  <h1 class="govuk-heading-xl">Example-frontend</h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <a class="govuk-button govuk-!-margin-right-5" data-module="govuk-button" href="/example-frontend/login">
+        Login
+      </a>
+      <a class="govuk-button" data-module="govuk-button" href="/example-frontend/register">
+        Register
+      </a>
+    </div>
+  </div>
+}

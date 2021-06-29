@@ -1,2 +1,9 @@
-service.name = example-frontend
-service.text = This is your new service
+
+service.name = Personal Details
+service.text = Welcome to the user entry front-end service
+service.nameEntry = Please enter your name
+service.extraDetails = Please enter Date of birth and Job Title
+service.address = Please enter your address
+service.email = Please enter your email
+service.summary = Summary
+error.summary.title = There's been an error
