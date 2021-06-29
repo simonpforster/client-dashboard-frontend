@@ -24,7 +24,7 @@ case class Client (
                     businessName: String,
                     contactNumber: String,
                     propertyNumber: Int,
-                    postCode: String,
+                    postcode: String,
                     businessType: String,
                     arn: Option[String] = None)
 

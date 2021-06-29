@@ -35,7 +35,7 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
     dashboardPage
   )
 
-  "HomeController dashboardMain() GET " should {
+  "DashboardController dashboardMain() GET " should {
     val fakeRequest = FakeRequest("GET", "/")
 
     "return status Ok" in {
@@ -44,7 +44,7 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
     }
   }
 
-  "HomeController clientName() GET " should {
+  "DashboardController clientName() GET " should {
 
     val jsonBody: JsObject = Json.obj (
       "name" -> "John Doe",
