@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
-import uk.gov.hmrc.examplefrontend.views.html.HelloWorldPage
+import play.api.mvc.MessagesControllerComponents
+import uk.gov.hmrc.examplefrontend.views.html.{HomePage}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
 
-@Singleton
-class HelloWorldController @Inject()(
-  mcc: MessagesControllerComponents,
-  helloWorldPage: HelloWorldPage)
-    extends FrontendController(mcc) {
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-  val helloWorld: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(helloWorldPage()))
+case class HomePageController @Inject()(
+   mcc: MessagesControllerComponents,
+   homePage: HomePage
+   )
+  extends FrontendController(mcc){
+
+  def homepage = Action.async { implicit request =>
+    Future.successful(Ok(homePage()))
   }
 
 }
+
