@@ -1,0 +1,13 @@
+@import uk.gov.hmrc.examplefrontend.models.Client
+@this(layout: Layout)
+@(client: Client)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("Dashboard")) {
+<h1 class="govuk-heading-xl">Dashboard</h1>
+<h3 class="govuk-heading-s"> @client.name </h3>
+<h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>
+
+
+
+<p class="govuk-body">??? dashboard includes: adding agent, deleting agent, deleting account button ??? </p>
+}
