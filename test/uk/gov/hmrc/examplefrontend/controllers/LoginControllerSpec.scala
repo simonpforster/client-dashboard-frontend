@@ -86,7 +86,7 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
           |  "businessName": "testBusiness",
           |  "contactNumber": "testContact",
           |  "propertyNumber": 12,
-          |  "postCode": "testPostCode",
+          |  "postcode": "testPostCode",
           |  "businessType": "testBusinessType"
           |}""".stripMargin)
       when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
@@ -108,7 +108,7 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     }
 
 
-    "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
+    "return INTERNAL_SERVER_ERROR when something wrong with the response from server" in {
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
       lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
       lazy val result = newController.loginSubmit(fakeRequestSubmit)

@@ -1,13 +1,26 @@
 @import uk.gov.hmrc.examplefrontend.models.Client
-@this(layout: Layout)
-@(client: Client)(implicit request: Request[_], messages: Messages)
+@import uk.gov.hmrc.examplefrontend.models.Agent
+
+@this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
+@(client: Client, agentForm: Form[Agent], agentArn: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = Some("Dashboard")) {
-<h1 class="govuk-heading-xl">Dashboard</h1>
-<h3 class="govuk-heading-s"> @client.name </h3>
-<h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>
+    <h1 class="govuk-heading-xl">Dashboard</h1>
+    <h3 class="govuk-heading-s"> @client.name </h3>
+    <h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>
 
+    @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.arnSubmit(), 'class -> "govuk-body") {
+        @if(agentArn.nonEmpty){
+            <p>You're account is linked with @agentArn</p>
+        }else {
+            @if(agentForm.errors("arn").nonEmpty) {
+                @govukInput(Input(id = "arn", name = "arn",value = Some(agentForm.data("arn")), label = Label(content = Text("Enter ARN:")), hint = Some(Hint(content = Text("The ARN. For example, ARNNUMBER."))), errorMessage = Some(ErrorMessage(content = Text("Enter the ARN")))))
+            }else{
+                @govukInput(Input(id="arn",name = "arn",value = Some(agentForm.data("arn")),label = Label(isPageHeading = true,content = Text("Enter ARN:"))))
+            }
+            <button class="govuk-button" data-module="govuk-button" type="submit" id="submit">Add</button>
+        }
 
-
-<p class="govuk-body">??? dashboard includes: adding agent, deleting agent, deleting account button ??? </p>
+    }
+    <p class="govuk-body">??? dashboard includes: adding agent, deleting agent, deleting account button ??? </p>
 }
