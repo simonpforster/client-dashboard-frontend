@@ -65,7 +65,7 @@ class LoginController @Inject()(
                   + ("businessName" -> s"${client.businessName}")
                   + ("contactNumber" -> s"${client.contactNumber}")
                   + ("propertyNumber" -> s"${client.propertyNumber}")
-                  + ("postCode" -> s"${client.postCode}")
+                  + ("postCode" -> s"${client.postcode}")
                   + ("businessType" -> s"${client.businessType}")
                 )
               case _ => Unauthorized
