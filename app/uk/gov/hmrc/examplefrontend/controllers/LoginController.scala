@@ -20,10 +20,13 @@ import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.mvc.Results.Redirect
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Client, User, UserForm}
 import uk.gov.hmrc.examplefrontend.views.html.LoginPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,6 +35,7 @@ class LoginController @Inject()(
   ws: WSClient,
   mcc: MessagesControllerComponents,
   loginPage: LoginPage,
+  dataConnector: DataConnector,
   implicit val ec: ExecutionContext)
     extends FrontendController(mcc) with I18nSupport{
 
@@ -45,36 +49,21 @@ class LoginController @Inject()(
     UserForm.form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(loginPage(formWithErrors)))
-      },
-
-      success => {
-        val userCredentials = Json.obj(
-          "crn" -> s"${success.crn}",
-          "password" -> s"${success.password}"
-        )
-        val futureResponse: Future[WSResponse] = ws.url("http://localhost:9006/loginCredentials").post(userCredentials)
-
-        futureResponse.map{
-          response => {
-            val jsObject = Json.fromJson[Client](response.json)
-            val client = jsObject.get
-            response.status match{
-              case 200 => Redirect("/example-frontend/dashboard")
-                .withSession(request.session + ("crn" -> s"${client.crn}")
-                  + ("name" -> s"${client.name}")
-                  + ("businessName" -> s"${client.businessName}")
-                  + ("contactNumber" -> s"${client.contactNumber}")
-                  + ("propertyNumber" -> s"${client.propertyNumber}")
-                  + ("postCode" -> s"${client.postcode}")
-                  + ("businessType" -> s"${client.businessType}")
-                )
-              case _ => Unauthorized
-            }
-          }
-        }recover {
-          case error => InternalServerError("")
+      }, success => {
+        dataConnector.login(success).map {
+          case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session
+            + ("crn" -> s"${client.crn}")
+            + ("name" -> s"${client.name}")
+            + ("businessName" -> s"${client.businessName}")
+            + ("contactNumber" -> s"${client.contactNumber}")
+            + ("propertyNumber" -> s"${client.propertyNumber}")
+            + ("postcode" -> s"${client.postcode}")
+            + ("businessType" -> s"${client.businessType}")
+          )
+          case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
         }
-      }
+      } recover {case _ => InternalServerError}
     )
-  }
+    }
+
 }
