@@ -30,7 +30,8 @@ import play.api.test.Helpers._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
 import play.api.mvc.MessagesControllerComponents
-import uk.gov.hmrc.examplefrontend.views.html.LoginPage
+import uk.gov.hmrc.examplefrontend.connector.LoginConnector
+import uk.gov.hmrc.examplefrontend.views.html.{LoginPage,LogoutSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,19 +39,31 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
+  implicit lazy val loginConnector: LoginConnector = app.injector.instanceOf[LoginConnector]
+  implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
   lazy val wsMock: WSClient = mock[WSClient]
   lazy val wsRequest: WSRequest = mock[WSRequest]
   lazy val wsResponse: WSResponse = mock[WSResponse]
-
+  lazy val controller = new LoginController(wsMock, mcc, loginPage,logoutSuccess,loginConnector, executionContext)
   private val fakeRequest = FakeRequest("GET", "/example-frontend/login")
-  private val controller = app.injector.instanceOf[LoginController]
+
 
   "login() method GET" should {
     "return 200" in {
       val result = controller.login(fakeRequest)
       status(result) shouldBe Status.OK
+    }
+  }
+
+    "logOut() method GET" should{
+      "return 303" in {
+        val result = controller.logOut(fakeRequest)
+        status(result) shouldBe 200
+        val doc=Jsoup.parse(contentAsString(result))
+        Option(doc.getElementById("Logout-Success")).isDefined shouldBe true
+      }
     }
 
     "return HTML" in {
@@ -58,7 +71,7 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
       contentType(result) shouldBe Some("text/html")
       charset(result)     shouldBe Some("utf-8")
     }
-  }
+
 
 
   "loginSubmit() method POST" should {
@@ -74,8 +87,8 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
 
     "redirect to the dashboard page with the corresponding session" in {
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
-      lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
-      lazy val result = newController.loginSubmit(fakeRequestSubmit)
+
+      lazy val result = controller.loginSubmit(fakeRequestSubmit)
 
       when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
       when(wsResponse.status) thenReturn 200
@@ -86,7 +99,7 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
           |  "businessName": "testBusiness",
           |  "contactNumber": "testContact",
           |  "propertyNumber": 12,
-          |  "postCode": "testPostCode",
+          |  "postcode": "testPostCode",
           |  "businessType": "testBusinessType"
           |}""".stripMargin)
       when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
@@ -95,10 +108,10 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
       session(result).get("crn") shouldBe Some("testCrn")
     }
 
+
     "return Unauthorized" in {
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
-      lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
-      lazy val result = newController.loginSubmit(fakeRequestSubmit)
+      lazy val result = controller.loginSubmit(fakeRequestSubmit)
 
       when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
       when(wsResponse.status) thenReturn 401
@@ -110,8 +123,8 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
 
     "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
-      lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
-      lazy val result = newController.loginSubmit(fakeRequestSubmit)
+
+      lazy val result = controller.loginSubmit(fakeRequestSubmit)
 
       when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
       when(wsResponse.status) thenReturn 400

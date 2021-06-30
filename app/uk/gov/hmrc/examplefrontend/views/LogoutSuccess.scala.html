@@ -1,0 +1,26 @@
+@import helper._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
+
+@()(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("example-frontend")) {
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper govuk-main-wrapper--l" id="Logout-Success" role="main">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-panel govuk-panel--confirmation">
+                    <h1 class="govuk-panel__title">
+                        Logged Out Successfully
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="govuk-button-group">
+    </div>
+</div>
+<a class="govuk-button" data-module="govuk-button" href = "@uk.gov.hmrc.examplefrontend.controllers.routes.LoginController.login" >
+    Continue
+</a>
+}

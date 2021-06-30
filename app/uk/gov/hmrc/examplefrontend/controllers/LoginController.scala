@@ -21,9 +21,11 @@ import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.connector.LoginConnector
 import uk.gov.hmrc.examplefrontend.models.{Client, User, UserForm}
-import uk.gov.hmrc.examplefrontend.views.html.LoginPage
+import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,6 +34,8 @@ class LoginController @Inject()(
   ws: WSClient,
   mcc: MessagesControllerComponents,
   loginPage: LoginPage,
+  logoutSuccessPage:LogoutSuccess,
+  loginConnector: LoginConnector,
   implicit val ec: ExecutionContext)
     extends FrontendController(mcc) with I18nSupport{
 
@@ -40,6 +44,12 @@ class LoginController @Inject()(
     val form: Form[User] = UserForm.form.fill(User("", ""))
     Ok(loginPage(form))
   }
+
+  def logOut = Action.async { implicit request =>
+    Future.successful(Ok(logoutSuccessPage()).withNewSession)
+  }
+
+
 
   def loginSubmit: Action[AnyContent] = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(
