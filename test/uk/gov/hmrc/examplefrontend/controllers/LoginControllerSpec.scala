@@ -28,6 +28,11 @@ import play.api.libs.ws.WSClient
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.libs.json.{JsObject, Json}
+import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
+import play.api.mvc.MessagesControllerComponents
+import uk.gov.hmrc.examplefrontend.connector.LoginConnector
+import uk.gov.hmrc.examplefrontend.views.html.{LoginPage,LogoutSuccess}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
 import uk.gov.hmrc.examplefrontend.views.html.LoginPage
@@ -38,7 +43,9 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
-
+  implicit lazy val loginConnector: LoginConnector = app.injector.instanceOf[LoginConnector]
+  implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
+  lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
 
   val fakeRequest = FakeRequest("GET", "/example-frontend/login")
@@ -63,13 +70,24 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
       val result = controller.login(fakeRequest)
       status(result) shouldBe Status.OK
     }
+  }
+
+    "logOut() method GET" should{
+      "return 303" in {
+        val result = controller.logOut(fakeRequest)
+        status(result) shouldBe 200
+        val doc=Jsoup.parse(contentAsString(result))
+        Option(doc.getElementById("Logout-Success")).isDefined shouldBe true
+      }
+    }
 
     "return HTML" in {
       val result = controller.login(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result)     shouldBe Some("utf-8")
     }
-  }
+
+
 
   "loginSubmit() method POST" should {
 
