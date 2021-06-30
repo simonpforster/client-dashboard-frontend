@@ -17,19 +17,19 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
+import play.api.libs.json.Json
+import play.api.libs.ws.WSClient
+import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.libs.json.{JsObject, Json}
-import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
-import play.api.mvc.MessagesControllerComponents
+import uk.gov.hmrc.examplefrontend.connectors.DataConnector
+import uk.gov.hmrc.examplefrontend.models.Client
 import uk.gov.hmrc.examplefrontend.views.html.LoginPage
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,14 +38,25 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
-  lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
-  lazy val wsMock: WSClient = mock[WSClient]
-  lazy val wsRequest: WSRequest = mock[WSRequest]
-  lazy val wsResponse: WSResponse = mock[WSResponse]
 
-  private val fakeRequest = FakeRequest("GET", "/example-frontend/login")
-  private val controller = app.injector.instanceOf[LoginController]
+
+  val fakeRequest = FakeRequest("GET", "/example-frontend/login")
+  val wsclient = app.injector.instanceOf[WSClient]
+  val connector = mock(classOf[DataConnector])
+  val controller = new LoginController(wsclient, mcc, loginPage, connector, executionContext)
+
+  val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType", Some("testArn"))
+  val testClientJs = Json.parse(
+    """{
+      |  "crn": "testCrn",
+      |  "name": "testName",
+      |  "businessName": "testBusiness",
+      |  "contactNumber": "testContact",
+      |  "propertyNumber": 12,
+      |  "postCode": "testPostCode",
+      |  "businessType": "testBusinessType"
+      |}""".stripMargin)
 
   "login() method GET" should {
     "return 200" in {
@@ -60,7 +71,6 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     }
   }
 
-
   "loginSubmit() method POST" should {
 
     "return BadRequest when there are errors on the input fields" in {
@@ -73,52 +83,35 @@ class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     }
 
     "redirect to the dashboard page with the corresponding session" in {
-      val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
-      lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
-      lazy val result = newController.loginSubmit(fakeRequestSubmit)
+      when(connector.login(any())).thenReturn(Future.successful(Some(testClient)))
 
-      when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
-      when(wsResponse.status) thenReturn 200
-      when(wsResponse.json) thenReturn Json.parse(
-        """{
-          |  "crn": "testCrn",
-          |  "name": "testName",
-          |  "businessName": "testBusiness",
-          |  "contactNumber": "testContact",
-          |  "propertyNumber": 12,
-          |  "postCode": "testPostCode",
-          |  "businessType": "testBusinessType"
-          |}""".stripMargin)
-      when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
+      val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+
+      val result = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe 303
       session(result).get("crn") shouldBe Some("testCrn")
     }
 
     "return Unauthorized" in {
+      when(connector.login(any())).thenReturn(Future.successful(None))
+
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
-      lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
-      lazy val result = newController.loginSubmit(fakeRequestSubmit)
 
-      when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
-      when(wsResponse.status) thenReturn 401
-      when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
+      val result = controller.loginSubmit(fakeRequestSubmit)
 
-      status(result) shouldBe 401
+      status(result) shouldBe UNAUTHORIZED
     }
 
 
     "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
+      when(connector.login(any())).thenReturn(Future.failed(new Exception))
+
       val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
-      lazy val newController = new LoginController(wsMock, mcc, loginPage, executionContext)
-      lazy val result = newController.loginSubmit(fakeRequestSubmit)
 
-      when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
-      when(wsResponse.status) thenReturn 400
-      when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.failed(new Throwable)
+      lazy val result = controller.loginSubmit(fakeRequestSubmit)
 
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      session(result).get("username") shouldBe None
+      status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
 }
