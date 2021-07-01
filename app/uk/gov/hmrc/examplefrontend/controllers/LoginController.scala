@@ -49,10 +49,10 @@ class LoginController @Inject()(
     UserForm.form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(loginPage(formWithErrors)))
-      },
-      success => {
+      }, success => {
         dataConnector.login(success).map {
-          case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session + ("crn" -> s"${client.crn}")
+          case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session
+            + ("crn" -> s"${client.crn}")
             + ("name" -> s"${client.name}")
             + ("businessName" -> s"${client.businessName}")
             + ("contactNumber" -> s"${client.contactNumber}")
