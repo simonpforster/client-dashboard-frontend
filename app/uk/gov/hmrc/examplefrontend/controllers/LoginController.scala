@@ -51,7 +51,7 @@ class LoginController @Inject()(
         Future.successful(BadRequest(loginPage(formWithErrors)))
       },
       success => {
-        dataConnector.login(success.crn, success.password).map {
+        dataConnector.login(success).map {
           case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session + ("crn" -> s"${client.crn}")
             + ("name" -> s"${client.name}")
             + ("businessName" -> s"${client.businessName}")
