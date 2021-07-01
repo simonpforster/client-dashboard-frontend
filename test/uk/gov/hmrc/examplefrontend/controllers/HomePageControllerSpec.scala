@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
 
-class HomePageControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite{
+class HomePageControllerSpec extends AbstractTest {
 
   private val fakeRequest = FakeRequest("GET", "/example-frontend")
   private val controller = app.injector.instanceOf[HomePageController]

@@ -1,5 +1,5 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
-class DeleteControllerSpec {
+class DeleteControllerSpec extends AbstractTest {
 
 }

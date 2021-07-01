@@ -37,8 +37,7 @@ import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite  {
-
+class DashboardControllerSpec extends AbstractTest {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
   lazy val mockARNConnector = mock[ARNConnector]

@@ -22,24 +22,26 @@ import org.mockito.Mockito.{mock, when}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.mvc.MessagesControllerComponents
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
 import play.api.mvc.MessagesControllerComponents
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.examplefrontend.connector.LoginConnector
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage,LogoutSuccess}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
 import uk.gov.hmrc.examplefrontend.views.html.LoginPage
+import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class LoginControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class LoginControllerSpec extends AbstractTest {
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
