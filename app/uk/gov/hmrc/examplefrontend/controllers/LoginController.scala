@@ -22,9 +22,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.connector.LoginConnector
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-
 import uk.gov.hmrc.examplefrontend.models.{Client, User, UserForm}
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -39,7 +37,6 @@ class LoginController @Inject()(
   loginPage: LoginPage,
   dataConnector: DataConnector,
   logoutSuccessPage:LogoutSuccess,
-  loginConnector: LoginConnector,
   implicit val ec: ExecutionContext)
     extends FrontendController(mcc) with I18nSupport{
 

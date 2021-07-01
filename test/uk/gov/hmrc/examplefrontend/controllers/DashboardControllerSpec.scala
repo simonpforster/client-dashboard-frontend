@@ -98,10 +98,8 @@ class DashboardControllerSpec extends AbstractTest {
       "form without errors and the result returned from POST is 200 " in {
         val fakeRequestWithoutFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
         val testObj = Agent("test")
-
         when(mockARNConnector.createObjAndPOST(any())).thenReturn (Future(Some(testObj)))
         val result = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-
         status(result) shouldBe OK
       }
     }

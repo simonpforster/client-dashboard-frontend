@@ -19,24 +19,14 @@ package uk.gov.hmrc.examplefrontend.controllers
 import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.mvc.MessagesControllerComponents
-import play.api.libs.json.{JsObject, Json}
-import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
-import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.examplefrontend.connector.LoginConnector
-import uk.gov.hmrc.examplefrontend.views.html.{LoginPage,LogoutSuccess}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
-import uk.gov.hmrc.examplefrontend.views.html.LoginPage
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,8 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class LoginControllerSpec extends AbstractTest {
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
-  implicit lazy val loginConnector: LoginConnector = app.injector.instanceOf[LoginConnector]
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
   lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
@@ -53,7 +43,7 @@ class LoginControllerSpec extends AbstractTest {
   val fakeRequest = FakeRequest("GET", "/example-frontend/login")
   val wsclient = app.injector.instanceOf[WSClient]
   val connector = mock(classOf[DataConnector])
-  val controller = new LoginController(wsclient, mcc, loginPage, connector, executionContext)
+  val controller = new LoginController(wsclient, mcc, loginPage, connector,logoutSuccess,executionContext)
 
   val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType", Some("testArn"))
   val testClientJs = Json.parse(

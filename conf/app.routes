@@ -5,7 +5,9 @@
 GET        /                        uk.gov.hmrc.examplefrontend.controllers.HomePageController.homepage
 GET        /login                   uk.gov.hmrc.examplefrontend.controllers.LoginController.login
 GET        /successful-logout       uk.gov.hmrc.examplefrontend.controllers.LoginController.logOut
-GET        /DeleteUser              uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClient
+GET        /delete-user              uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClient
+GET        /delete-select            uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.areYouSure
+GET        /deleted-client           uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClientSuccessful()
 
 +nocsrf
 POST       /login                   uk.gov.hmrc.examplefrontend.controllers.LoginController.loginSubmit
