@@ -1,0 +1,5 @@
+package intergrationTest
+
+trait WireMockHelper {
+
+}
