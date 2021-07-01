@@ -51,13 +51,13 @@ class LoginController @Inject()(
         Future.successful(BadRequest(loginPage(formWithErrors)))
       },
       success => {
-        dataConnector.login(success.crn, success.password).map {
+        dataConnector.login(success).map {
           case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session + ("crn" -> s"${client.crn}")
             + ("name" -> s"${client.name}")
             + ("businessName" -> s"${client.businessName}")
             + ("contactNumber" -> s"${client.contactNumber}")
             + ("propertyNumber" -> s"${client.propertyNumber}")
-            + ("postCode" -> s"${client.postcode}")
+            + ("postcode" -> s"${client.postcode}")
             + ("businessType" -> s"${client.businessType}")
           )
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
