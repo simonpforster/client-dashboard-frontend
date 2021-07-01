@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
+
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.matchers.should.Matchers
@@ -26,32 +25,29 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsObject, Json}
-import play.api.libs.ws.{BodyWritable, WSClient, WSRequest, WSResponse}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, session, status}
+import uk.gov.hmrc.examplefrontend.connectors.ARNConnector
+import uk.gov.hmrc.examplefrontend.models.Agent
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 
 import scala.concurrent.{ExecutionContext, Future}
 
 
 class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite  {
-  implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
-
-  lazy val ws: WSClient = app.injector.instanceOf[WSClient]
-
-  lazy val wsMock: WSClient = mock[WSClient]
-  lazy val wsRequest: WSRequest = mock[WSRequest]
-  lazy val wsResponse: WSResponse = mock[WSResponse]
+  lazy val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
+  lazy val mockARNConnector = mock[ARNConnector]
+  implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   object testDashboardController extends DashboardController (
-    wsMock,
     mcc,
     dashboardPage,
+    mockARNConnector,
     executionContext
   )
 
@@ -59,8 +55,6 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
 
     val fakeRequest = FakeRequest("GET", "/dashboard")
       .withSession("name" -> "John Doe" + "crn" -> "asd3748" )
-
-
 
 
     "return status Ok" in {
@@ -103,17 +97,11 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
 
     "return Ok" when{
       "form without errors and the result returned from POST is 200 " in {
-        val fakeRequestWithFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
+        val fakeRequestWithoutFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
+        val testObj = Agent("test")
 
-        when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
-        when(wsResponse.status) thenReturn 200
-        when(wsResponse.json) thenReturn Json.parse(
-          """{
-            |  "arn": "testingArn"
-            |}""".stripMargin)
-        when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
-
-        val result = testDashboardController.arnSubmit(fakeRequestWithFormErrors)
+        when(mockARNConnector.createObjAndPOST(any())).thenReturn (Future(Some(testObj)))
+        val result = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
 
         status(result) shouldBe OK
       }
@@ -121,26 +109,12 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
 
     "return BadRequest" when{
       "form without errors and the result returned from POST is 404" in {
-        val fakeRequestWithFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
+        val fakeRequestWithoutFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
 
-        when(wsMock.url(ArgumentMatchers.any())) thenReturn wsRequest
-        when(wsResponse.status) thenReturn 404
-        when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.successful(wsResponse)
-
-        val result = testDashboardController.arnSubmit(fakeRequestWithFormErrors)
+        when(mockARNConnector.createObjAndPOST(any())).thenReturn (Future(None))
+        val result = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
 
         status(result) shouldBe BAD_REQUEST
-      }
-    }
-
-    "return InternalServerError" when{
-      "something wrong with the response from server" in {
-        val fakeRequestWithFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
-
-        when(wsRequest.post(any[JsObject]())(any[BodyWritable[JsObject]]())) thenReturn Future.failed(new Throwable)
-        val result = testDashboardController.arnSubmit(fakeRequestWithFormErrors)
-
-        status(result) shouldBe INTERNAL_SERVER_ERROR
       }
     }
   }
