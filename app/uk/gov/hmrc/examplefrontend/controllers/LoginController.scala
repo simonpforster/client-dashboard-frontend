@@ -32,7 +32,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class LoginController @Inject()(
-  ws: WSClient,
   mcc: MessagesControllerComponents,
   loginPage: LoginPage,
   dataConnector: DataConnector,
@@ -58,7 +57,8 @@ class LoginController @Inject()(
         Future.successful(BadRequest(loginPage(formWithErrors)))
       }, success => {
         dataConnector.login(success).map {
-          case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session
+          case Some(client) =>
+            val call = Redirect("/example-frontend/dashboard").withSession(request.session
             + ("crn" -> s"${client.crn}")
             + ("name" -> s"${client.name}")
             + ("businessName" -> s"${client.businessName}")
@@ -66,7 +66,12 @@ class LoginController @Inject()(
             + ("propertyNumber" -> s"${client.propertyNumber}")
             + ("postcode" -> s"${client.postcode}")
             + ("businessType" -> s"${client.businessType}")
-          )
+            )
+            client.arn match {
+              case Some(arn) => call.withSession(call.session + ("arn" -> arn))
+              case None => call
+            }
+
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
         }
       } recover {case _ => InternalServerError}

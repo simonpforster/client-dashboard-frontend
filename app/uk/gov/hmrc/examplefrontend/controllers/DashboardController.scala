@@ -35,7 +35,15 @@ class DashboardController @Inject()(
   extends FrontendController(mcc){
 
   def dashboardMain: Action[AnyContent] = Action.async { implicit request =>
-    val clientOne = Client(request.session.get("crn").getOrElse(""), request.session.get("name").getOrElse(""), "","", 0, "", "" )
+    val clientOne = Client(request.session.get("crn").getOrElse(""),
+                          request.session.get("name").getOrElse(""),
+                          request.session.get("businessName").getOrElse(""),
+                          request.session.get("contactNumber").getOrElse(""),
+                          (request.session.get("propertyNumber").getOrElse("1")).toInt,
+                          request.session.get("postcode").getOrElse(""),
+                          request.session.get("businessType").getOrElse(""),
+                          request.session.get("arn"))
+
     Future.successful(Ok(dashboardPage(clientOne, AgentForm.form.fill(Agent("")))))
   }
 
@@ -45,7 +53,14 @@ class DashboardController @Inject()(
   }
 
   def arnSubmit: Action[AnyContent] = Action.async { implicit request =>
-    val clientOne = Client(request.session.get("crn").getOrElse(""), request.session.get("name").getOrElse(""), "","", 0, "", "")
+    val clientOne = Client(request.session.get("crn").getOrElse(""),
+                          request.session.get("name").getOrElse(""),
+                          request.session.get("businessName").getOrElse(""),
+                          request.session.get("contactNumber").getOrElse(""),
+                          (request.session.get("propertyNumber").getOrElse("1")).toInt,
+                          request.session.get("postcode").getOrElse(""),
+                          request.session.get("businessType").getOrElse(""),
+                          request.session.get("arn"))
     val emptyForm = AgentForm.form.fill(Agent(""))
     val formWithErrors = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
 
@@ -56,11 +71,30 @@ class DashboardController @Inject()(
 
       success =>{
         dataConnector.addArn(clientOne, success) map {
-          case true => Ok(dashboardPage(clientOne.copy(arn = Some(success.arn)), emptyForm))
+          case true => Ok(dashboardPage(clientOne.copy(arn = Some(success.arn)), emptyForm)).withSession(request.session + ("arn" -> success.arn))
           case false => BadRequest(dashboardPage(clientOne, formWithErrors))
         }
       }
     )
   }
 
+  def arnRemove: Action[AnyContent] = Action.async { implicit request =>
+    val clientOne = Client(request.session.get("crn").getOrElse(""),
+                          request.session.get("name").getOrElse(""),
+                          request.session.get("businessName").getOrElse(""),
+                          request.session.get("contactNumber").getOrElse(""),
+                          (request.session.get("propertyNumber").getOrElse("1")).toInt,
+                          request.session.get("postcode").getOrElse(""),
+                          request.session.get("businessType").getOrElse(""),
+                          request.session.get("arn"))
+    val emptyForm = AgentForm.form.fill(Agent(""))
+    clientOne.arn match {
+      case Some(arn) =>
+        dataConnector.removeArn(clientOne, Agent(arn)).map {
+          case true => Ok(dashboardPage(clientOne.copy(arn = None), emptyForm)).withSession(request.session - ("arn"))
+          case false => BadRequest(dashboardPage(clientOne, emptyForm))
+        }
+      case None => Future(BadRequest(dashboardPage(clientOne, emptyForm)))
+    }
+  }
 }

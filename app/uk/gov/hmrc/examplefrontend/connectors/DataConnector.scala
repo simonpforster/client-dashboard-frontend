@@ -30,9 +30,7 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
 	private def wspost(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
-	private def exwspost(url:String, jsObject: JsObject) = ws.url(url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
-
-	private def wsget(url: String) = ws.url(host + url).get()
+	private def wspatch(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
 
 	def login(user: User): Future[Option[Client]] = {
 			val userCredentials = Json.obj(
@@ -71,7 +69,18 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 			"crn" -> client.crn,
 			"arn" -> agent.arn
 		)
-		wspost("/add-agent", clientAgentPair).map{_.status match{
+		wspatch("/add-agent", clientAgentPair).map{_.status match{
+			case 204 => true
+			case _ => false
+		}}
+	}
+
+	def removeArn(client: Client, agent: Agent): Future[Boolean] = {
+		val clientAgentPair = Json.obj(
+			"crn" -> client.crn,
+			"arn" -> agent.arn
+		)
+		wspatch("/remove-agent", clientAgentPair).map{_.status match {
 			case 204 => true
 			case _ => false
 		}}
