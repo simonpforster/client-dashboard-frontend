@@ -30,6 +30,8 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
 	private def wspost(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
+	private def exwspost(url:String, jsObject: JsObject) = ws.url(url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+
 	private def wsget(url: String) = ws.url(host + url).get()
 
 	def login(user: User): Future[Option[Client]] = {
@@ -64,11 +66,14 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 			})
 	}
 
-	def createObjAndPOST(agent: Agent): Future[Option[Agent]] = {
-		val ARN = Json.obj(
+	def addArn(client: Client, agent: Agent): Future[Boolean] = {
+		val clientAgentPair = Json.obj(
+			"crn" -> client.crn,
 			"arn" -> agent.arn
 		)
-
-		wspost("http://localhost:9005/submit-arn", ARN).map{ result => Json.fromJson[Agent](result.json).asOpt}
+		wspost("/add-agent", clientAgentPair).map{_.status match{
+			case 204 => true
+			case _ => false
+		}}
 	}
 }
