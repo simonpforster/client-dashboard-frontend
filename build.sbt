@@ -37,7 +37,7 @@ lazy val microservice = Project(appName, file("."))
 PlayKeys .devSettings := Seq ("play.server.http.port" -> "9008")
 
 lazy val scoverageSettings = Seq(
-  ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;config.*;.*(AuthService|BuildInfo|Routes).*",
+  ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;config.*;.*(AuthService|BuildInfo|Routes).*;.*views.html*",
   ScoverageKeys.coverageMinimumStmtTotal := 95,
   ScoverageKeys.coverageFailOnMinimum := true,
   ScoverageKeys.coverageHighlighting := true
