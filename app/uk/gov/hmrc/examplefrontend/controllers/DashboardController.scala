@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
+import play.api.data.Form
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -26,35 +27,35 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DashboardController @Inject()(
-                                     mcc: MessagesControllerComponents,
-                                     dashboardPage: DashboardPage,
-                                     dataConnector: DataConnector,
-                                     implicit val ec: ExecutionContext
-                                      )
-  extends FrontendController(mcc){
+class DashboardController @Inject()(mcc: MessagesControllerComponents,
+                                    dashboardPage: DashboardPage,
+                                    dataConnector: DataConnector,
+                                    implicit val ec: ExecutionContext)
+  extends FrontendController(mcc) {
 
   def dashboardMain: Action[AnyContent] = Action.async { implicit request =>
-    val clientOne = Client(request.session.get("crn").getOrElse(""), request.session.get("name").getOrElse(""), "","", 0, "", "" )
+    val clientOne: Client = Client(
+      request.session.get("crn").getOrElse(""),
+      request.session.get("name").getOrElse(""), "", "", 0, "", "")
     Future.successful(Ok(dashboardPage(clientOne, AgentForm.form.fill(Agent("")))))
   }
 
   def clientName: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.DashboardController.dashboardMain())
-      .withSession(request.session + ("name" -> "John Doe" ) + ("crn" -> "asd39402" ))
+      .withSession(request.session + ("name" -> "John Doe") + ("crn" -> "asd39402"))
   }
 
   def arnSubmit: Action[AnyContent] = Action.async { implicit request =>
-    val clientOne = Client(request.session.get("crn").getOrElse(""), request.session.get("name").getOrElse(""), "","", 0, "", "")
-    val emptyForm = AgentForm.form.fill(Agent(""))
-    val formWithErrors = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
-
-    AgentForm.form.bindFromRequest.fold (
+    val clientOne: Client = Client(
+      request.session.get("crn").getOrElse(""),
+      request.session.get("name").getOrElse(""), "", "", 0, "", "")
+    val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
+    val formWithErrors: Form[Agent] = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
+    AgentForm.form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(dashboardPage(clientOne, formWithErrors)))
       },
-
-      success =>{
+      success => {
         dataConnector.createObjAndPOST(success) map {
           case Some(agent) => Ok(dashboardPage(clientOne.copy(arn = Some(agent.arn)), emptyForm))
           case None => BadRequest(dashboardPage(clientOne, formWithErrors))

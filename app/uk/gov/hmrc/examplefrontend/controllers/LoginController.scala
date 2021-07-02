@@ -18,27 +18,23 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.libs.json.Json
-import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.mvc.Results.Redirect
+import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, User, UserForm}
+import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LoginController @Inject()(
-  ws: WSClient,
-  mcc: MessagesControllerComponents,
-  loginPage: LoginPage,
-  dataConnector: DataConnector,
-  logoutSuccessPage:LogoutSuccess,
-  implicit val ec: ExecutionContext)
-    extends FrontendController(mcc) with I18nSupport{
+class LoginController @Inject()(ws: WSClient,
+                                mcc: MessagesControllerComponents,
+                                loginPage: LoginPage,
+                                dataConnector: DataConnector,
+                                logoutSuccessPage: LogoutSuccess,
+                                implicit val ec: ExecutionContext)
+  extends FrontendController(mcc) with I18nSupport {
 
 
   def login: Action[AnyContent] = Action { implicit request =>
@@ -46,11 +42,9 @@ class LoginController @Inject()(
     Ok(loginPage(form))
   }
 
-  def logOut = Action.async { implicit request =>
+  def logOut: Action[AnyContent] = Action.async { implicit request =>
     Future.successful(Ok(logoutSuccessPage()).withNewSession)
   }
-
-
 
   def loginSubmit: Action[AnyContent] = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(
@@ -69,8 +63,7 @@ class LoginController @Inject()(
           )
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
         }
-      } recover {case _ => InternalServerError}
+      } recover { case _ => InternalServerError }
     )
-    }
-
+  }
 }

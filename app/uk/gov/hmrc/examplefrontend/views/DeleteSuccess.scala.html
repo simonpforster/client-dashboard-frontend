@@ -6,21 +6,22 @@
 
 @layout(pageTitle = Some("User Deleted")) {
 <div class="govuk-width-container">
-  <main class="govuk-main-wrapper govuk-main-wrapper--l" id="Logout-Success" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-panel govuk-panel--confirmation">
-          <h1 class="govuk-panel__title">
-            Deleted Client Successfully
-          </h1>
+    <main class="govuk-main-wrapper govuk-main-wrapper--l" id="Logout-Success" role="main">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-panel govuk-panel--confirmation">
+                    <h1 class="govuk-panel__title">
+                        Deleted Client Successfully
+                    </h1>
+                </div>
+            </div>
         </div>
-      </div>
+    </main>
+    <div class="govuk-button-group">
     </div>
-  </main>
-  <div class="govuk-button-group">
-  </div>
 </div>
-<a class="govuk-button" data-module="govuk-button" href = "@uk.gov.hmrc.examplefrontend.controllers.routes.HomePageController.homepage()" >
-  Continue
+<a class="govuk-button" data-module="govuk-button"
+   href="@uk.gov.hmrc.examplefrontend.controllers.routes.HomePageController.homepage()">
+    Continue
 </a>
 }

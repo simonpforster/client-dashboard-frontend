@@ -23,11 +23,9 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class HomePageController @Inject()(
-   mcc: MessagesControllerComponents,
-   homePage: HomePage
-   )
-  extends FrontendController(mcc){
+class HomePageController @Inject()(mcc: MessagesControllerComponents,
+                                   homePage: HomePage)
+  extends FrontendController(mcc) {
 
   def homepage: Action[AnyContent] = Action { implicit request =>
     Ok(homePage())

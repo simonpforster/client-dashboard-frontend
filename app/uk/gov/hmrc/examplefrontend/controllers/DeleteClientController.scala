@@ -26,12 +26,11 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DeleteClientController @Inject()(
-                                        mcc: MessagesControllerComponents,
-                                        dataConnector: DataConnector,
-                                        deleteSuccess: DeleteSuccess,
-                                        deleteAreYouSure: DeleteAreYouSure,
-                                        implicit val ec: ExecutionContext)
+class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
+                                       dataConnector: DataConnector,
+                                       deleteSuccess: DeleteSuccess,
+                                       deleteAreYouSure: DeleteAreYouSure,
+                                       implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
   def deleteClient(): Action[AnyContent] = Action async { implicit request =>
@@ -42,19 +41,20 @@ class DeleteClientController @Inject()(
         val response: Future[Boolean] = dataConnector.deleteClient(crn)
         response.map {
           case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
-          case false => Redirect(routes.DashboardController.dashboardMain(),BAD_GATEWAY)
+          case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
         }
       case None => Future.successful(BadRequest)
     }
   }
 
   def areYouSure(): Action[AnyContent] = Action { implicit request =>
-    val clientOne = Client(request.session.get("crn").getOrElse(""), request.session.get("name").getOrElse(""), "", "", 0, "", "")
+    val clientOne: Client = Client(
+      request.session.get("crn").getOrElse(""),
+      request.session.get("name").getOrElse(""), "", "", 0, "", "")
     Ok(deleteAreYouSure(clientOne))
   }
 
   def deleteClientSuccessful(): Action[AnyContent] = Action { implicit request =>
     Ok(deleteSuccess())
   }
-
 }
