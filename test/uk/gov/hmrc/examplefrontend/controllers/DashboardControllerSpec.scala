@@ -30,6 +30,7 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, session, status}
+import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Agent
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 
@@ -39,13 +40,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class DashboardControllerSpec extends AbstractTest {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
-  lazy val mockARNConnector = mock[ARNConnector]
+  lazy val mockDataConnector = mock[DataConnector]
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   object testDashboardController extends DashboardController (
     mcc,
     dashboardPage,
-    mockARNConnector,
+    mockDataConnector,
     executionContext
   )
 
@@ -97,7 +98,7 @@ class DashboardControllerSpec extends AbstractTest {
       "form without errors and the result returned from POST is 200 " in {
         val fakeRequestWithoutFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
         val testObj = Agent("test")
-        when(mockARNConnector.createObjAndPOST(any())).thenReturn (Future(Some(testObj)))
+        when(mockDataConnector.createObjAndPOST(any())).thenReturn (Future(Some(testObj)))
         val result = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
         status(result) shouldBe OK
       }
@@ -107,7 +108,7 @@ class DashboardControllerSpec extends AbstractTest {
       "form without errors and the result returned from POST is 404" in {
         val fakeRequestWithoutFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
 
-        when(mockARNConnector.createObjAndPOST(any())).thenReturn (Future(None))
+        when(mockDataConnector.createObjAndPOST(any())).thenReturn (Future(None))
         val result = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
 
         status(result) shouldBe BAD_REQUEST
