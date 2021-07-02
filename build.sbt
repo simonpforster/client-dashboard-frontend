@@ -1,5 +1,7 @@
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
+import scoverage.ScoverageKeys
+
 val appName = "client-dashboard-frontend"
 val silencerVersion = "1.7.3"
 lazy val microservice = Project(appName, file("."))
@@ -30,4 +32,14 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(integrationTestSettings(): _*)
   .settings(resolvers += Resolver.jcenterRepo)
+  .settings(scoverageSettings)
+
 PlayKeys .devSettings := Seq ("play.server.http.port" -> "9008")
+
+lazy val scoverageSettings = Seq(
+  ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;config.*;.*(AuthService|BuildInfo|Routes).*",
+  ScoverageKeys.coverageMinimumStmtTotal := 95,
+  ScoverageKeys.coverageFailOnMinimum := true,
+  ScoverageKeys.coverageHighlighting := true
+)
+
