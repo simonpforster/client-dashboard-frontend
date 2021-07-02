@@ -55,10 +55,11 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       formWithErrors => {
         Future.successful(BadRequest(dashboardPage(clientOne, formWithErrors)))
       },
-      success => {
-        dataConnector.createObjAndPOST(success) map {
-          case Some(agent) => Ok(dashboardPage(clientOne.copy(arn = Some(agent.arn)), emptyForm))
-          case None => BadRequest(dashboardPage(clientOne, formWithErrors))
+
+      success =>{
+        dataConnector.addArn(clientOne, success) map {
+          case true => Ok(dashboardPage(clientOne.copy(arn = Some(success.arn)), emptyForm))
+          case false => BadRequest(dashboardPage(clientOne, formWithErrors))
         }
       }
     )
