@@ -19,7 +19,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.connectors.ARNConnector
+import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
 
 import javax.inject.{Inject, Singleton}
@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DashboardController @Inject()(
                                      mcc: MessagesControllerComponents,
                                      dashboardPage: DashboardPage,
-                                     arnConnector: ARNConnector,
+                                     dataConnector: DataConnector,
                                      implicit val ec: ExecutionContext
                                       )
   extends FrontendController(mcc){
@@ -55,7 +55,7 @@ class DashboardController @Inject()(
       },
 
       success =>{
-        arnConnector.createObjAndPOST(success) map {
+        dataConnector.createObjAndPOST(success) map {
           case Some(agent) => Ok(dashboardPage(clientOne.copy(arn = Some(agent.arn)), emptyForm))
           case None => BadRequest(dashboardPage(clientOne, formWithErrors))
         }

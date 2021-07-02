@@ -18,7 +18,7 @@ package uk.gov.hmrc.examplefrontend.connectors
 
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
-import uk.gov.hmrc.examplefrontend.models.{CRN, Client, User}
+import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -62,5 +62,13 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 				case 204 => true
 				case _ => false
 			})
+	}
+
+	def createObjAndPOST(agent: Agent): Future[Option[Agent]] = {
+		val ARN = Json.obj(
+			"arn" -> agent.arn
+		)
+
+		wspost("http://localhost:9005/submit-arn", ARN).map{ result => Json.fromJson[Agent](result.json).asOpt}
 	}
 }

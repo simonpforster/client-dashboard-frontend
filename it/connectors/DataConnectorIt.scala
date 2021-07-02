@@ -51,8 +51,6 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 		super.afterAll()
 	}
 
-
-
 	"DataConnector" can {
 
 		"delete" should{
@@ -86,6 +84,12 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 				val result = await(connector.login(testUser))
 
 				result shouldBe None
+			}
+		}
+
+		"arn" should {
+			"" in {
+
 			}
 		}
 

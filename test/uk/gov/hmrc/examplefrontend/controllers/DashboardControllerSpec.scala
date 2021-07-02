@@ -30,7 +30,6 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, session, status}
-import uk.gov.hmrc.examplefrontend.connectors.ARNConnector
 import uk.gov.hmrc.examplefrontend.models.Agent
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 
