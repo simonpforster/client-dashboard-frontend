@@ -1,0 +1,21 @@
+@import uk.gov.hmrc.examplefrontend.models.Client
+@import helper._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
+@(client:Client)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("example-frontend")) {
+
+<h1 class="govuk-panel__title">
+  Are you sure you wish to delete your account?
+</h1>
+
+<h3 class="govuk-heading-s"> @client.name </h3>
+<h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>
+
+<a class="govuk-button" data-module="govuk-button" href = "@uk.gov.hmrc.examplefrontend.controllers.routes.DeleteClientController.deleteClient" >
+  Yes
+</a>
+
+<a class="govuk-link" href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.dashboardMain">Cancel</a>
+}
