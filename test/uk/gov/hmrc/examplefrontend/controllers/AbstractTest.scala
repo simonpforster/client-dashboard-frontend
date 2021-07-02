@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.examplefrontend.models
+package uk.gov.hmrc.examplefrontend.controllers
 
-import play.api.libs.json.{Json, OFormat}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-case class Client (
-                    crn: String,
-                    name: String,
-                    businessName: String,
-                    contactNumber: String,
-                    propertyNumber: Int,
-                    postcode: String,
-                    businessType: String,
-                    arn: Option[String] = None)
+trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers with GuiceOneAppPerSuite {
 
-object Client {
-  implicit val format: OFormat[Client] = Json.format[Client]
 }
-

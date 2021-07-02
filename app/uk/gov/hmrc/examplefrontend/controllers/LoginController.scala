@@ -24,7 +24,7 @@ import play.api.mvc.Results.Redirect
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Client, User, UserForm}
-import uk.gov.hmrc.examplefrontend.views.html.LoginPage
+import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
@@ -36,6 +36,7 @@ class LoginController @Inject()(
   mcc: MessagesControllerComponents,
   loginPage: LoginPage,
   dataConnector: DataConnector,
+  logoutSuccessPage:LogoutSuccess,
   implicit val ec: ExecutionContext)
     extends FrontendController(mcc) with I18nSupport{
 
@@ -44,6 +45,12 @@ class LoginController @Inject()(
     val form: Form[User] = UserForm.form.fill(User("", ""))
     Ok(loginPage(form))
   }
+
+  def logOut = Action.async { implicit request =>
+    Future.successful(Ok(logoutSuccessPage()).withNewSession)
+  }
+
+
 
   def loginSubmit: Action[AnyContent] = Action.async { implicit request =>
     UserForm.form.bindFromRequest.fold(

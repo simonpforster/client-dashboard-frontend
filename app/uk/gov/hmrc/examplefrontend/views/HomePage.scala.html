@@ -2,14 +2,14 @@
 
 @()(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some("example-frontend")) {
+@layout(pageTitle = Some("Home")) {
   <h1 class="govuk-heading-xl">Example-frontend</h1>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <a class="govuk-button govuk-!-margin-right-5" data-module="govuk-button" href="/example-frontend/login">
+      <a class="govuk-button govuk-!-margin-right-5" id="login" data-module="govuk-button" href="/example-frontend/login">
         Login
       </a>
-      <a class="govuk-button" data-module="govuk-button" href="/example-frontend/register">
+      <a class="govuk-button" id="register" data-module="govuk-button" href="http://localhost:9007/example-frontend/name-input">
         Register
       </a>
     </div>

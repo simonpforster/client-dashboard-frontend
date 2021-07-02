@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.examplefrontend.connectors
 
-import play.api.libs.json.{JsError, JsObject, JsResult, JsSuccess, Json}
-import play.api.libs.ws.WSClient
-import uk.gov.hmrc.examplefrontend.models.{Client, User}
+import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
+import play.api.libs.ws.{WSClient, WSResponse}
+import uk.gov.hmrc.examplefrontend.models.{CRN, Client, User}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,6 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
 	private val host = "http://localhost:9006"
+
 
 	private def wspost(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
@@ -47,4 +48,19 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 				}
 			}
 		}
+
+	def wsdelete(url:String,jsObject: JsObject):Future[WSResponse] = {
+		ws.url((host+url)).withBody(jsObject).delete()
+	}
+
+	def deleteClient(crn:CRN):Future[Boolean] ={
+		val newcrn:JsObject = Json.obj(
+			"crn" -> crn.crn
+		)
+		wsdelete("/delete-client",newcrn).map(
+			_.status match{
+				case 204 => true
+				case _ => false
+			})
+	}
 }

@@ -24,7 +24,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, User}
+import uk.gov.hmrc.examplefrontend.models.{CRN, Client, User}
 
 class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with BeforeAndAfterAll{
 
@@ -34,6 +34,12 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 	val testClientJson = Json.toJson(testClient)
 
 	val testUser: User = User("testCrn", "testPass")
+
+	lazy val crn = Json.toJson(crnTest)
+
+	val crnTest: CRN =CRN("crnTest")
+
+
 
 	override def beforeAll(): Unit = {
 		super.beforeAll()
@@ -45,7 +51,17 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 		super.afterAll()
 	}
 
+
+
 	"DataConnector" can {
+
+		"delete" should{
+			"succesfully delete a client"in{
+				stubDelete("/delete-client",status = 204,"")
+				val result:Boolean = await(connector.deleteClient(crnTest))
+				result should be (true)
+			}
+		}
 
 		"login" should {
 			"succesfully receive a client" in {

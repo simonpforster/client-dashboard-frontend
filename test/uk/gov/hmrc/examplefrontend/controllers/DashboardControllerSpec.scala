@@ -37,8 +37,7 @@ import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite  {
-
+class DashboardControllerSpec extends AbstractTest {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
   lazy val mockARNConnector = mock[ARNConnector]
@@ -99,10 +98,8 @@ class DashboardControllerSpec extends AnyWordSpec with Matchers with GuiceOneApp
       "form without errors and the result returned from POST is 200 " in {
         val fakeRequestWithoutFormErrors = fakeRequestArnSubmit.withFormUrlEncodedBody("arn" -> "testingArn")
         val testObj = Agent("test")
-
         when(mockARNConnector.createObjAndPOST(any())).thenReturn (Future(Some(testObj)))
         val result = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-
         status(result) shouldBe OK
       }
     }
