@@ -19,7 +19,6 @@ package uk.gov.hmrc.examplefrontend.models
 import play.api.data.Form
 import play.api.data.Forms.{mapping, nonEmptyText}
 
-
 case class User(crn: String, password: String)
 
 object UserForm {

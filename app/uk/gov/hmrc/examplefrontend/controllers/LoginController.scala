@@ -18,7 +18,6 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
@@ -29,16 +28,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class LoginController @Inject()(
-  mcc: MessagesControllerComponents,
-  loginPage: LoginPage,
-  dataConnector: DataConnector,
-  logoutSuccessPage:LogoutSuccess,
-  implicit val ec: ExecutionContext)
-    extends FrontendController(mcc) with I18nSupport{
-
+                                 mcc: MessagesControllerComponents,
+                                 loginPage: LoginPage,
+                                 dataConnector: DataConnector,
+                                 logoutSuccessPage: LogoutSuccess,
+                                 implicit val ec: ExecutionContext)
+  extends FrontendController(mcc) with I18nSupport {
 
   def login: Action[AnyContent] = Action { implicit request =>
-    val form: Form[User] = UserForm.form.fill(User("", ""))
+    val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
     Ok(loginPage(form))
   }
 
@@ -54,13 +52,13 @@ class LoginController @Inject()(
         dataConnector.login(success).map {
           case Some(client) =>
             val call = Redirect("/example-frontend/dashboard").withSession(request.session
-            + ("crn" -> s"${client.crn}")
-            + ("name" -> s"${client.name}")
-            + ("businessName" -> s"${client.businessName}")
-            + ("contactNumber" -> s"${client.contactNumber}")
-            + ("propertyNumber" -> s"${client.propertyNumber}")
-            + ("postcode" -> s"${client.postcode}")
-            + ("businessType" -> s"${client.businessType}")
+              + ("crn" -> s"${client.crn}")
+              + ("name" -> s"${client.name}")
+              + ("businessName" -> s"${client.businessName}")
+              + ("contactNumber" -> s"${client.contactNumber}")
+              + ("propertyNumber" -> s"${client.propertyNumber}")
+              + ("postcode" -> s"${client.postcode}")
+              + ("businessType" -> s"${client.businessType}")
             )
             client.arn match {
               case Some(arn) => call.withSession(call.session + ("arn" -> arn))

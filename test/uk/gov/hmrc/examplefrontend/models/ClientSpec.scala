@@ -19,10 +19,17 @@ package uk.gov.hmrc.examplefrontend.models
 import play.api.libs.json.{JsSuccess, JsValue, Json}
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
-
 class ClientSpec extends AbstractTest {
 
-  val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType", Some("testArn"))
+  val testClient: Client = Client(
+    crn = "testCrn",
+    name = "testName",
+    businessName = "testBusiness",
+    contactNumber = "testContact",
+    propertyNumber = 12,
+    postcode = "testPostcode",
+    businessType = "testBusinessType",
+    arn = Some("testArn"))
 
   val testClientJs: JsValue = Json.parse(
     """{

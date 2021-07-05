@@ -25,75 +25,72 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait WireMockHelper {
 
-	val wiremockPort = 9006
-	val wiremockHost = "localhost"
+  val wiremockPort = 9006
+  val wiremockHost = "localhost"
+  lazy val wmConfig: WireMockConfiguration = wireMockConfig().port(wiremockPort)
+  lazy val wireMockServer: WireMockServer = new WireMockServer(wmConfig)
 
-	lazy val wmConfig: WireMockConfiguration = wireMockConfig().port(wiremockPort)
-	lazy val wireMockServer = new WireMockServer(wmConfig)
+  def startWiremock(): Unit = {
+    wireMockServer.start()
+    WireMock.configureFor(wiremockHost, wiremockPort)
+  }
 
+  def stopWiremock(): Unit = wireMockServer.stop()
 
+  def resetWiremock(): Unit = WireMock.reset()
 
-	def startWiremock(): Unit = {
-		wireMockServer.start()
-		WireMock.configureFor(wiremockHost, wiremockPort)
-	}
+  def stubPost(url: String, status: Integer, responseBody: String): StubMapping =
+    stubFor(post(urlMatching(url))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(responseBody)
+      )
+    )
 
-	def stopWiremock(): Unit = wireMockServer.stop()
+  def stubPut(url: String, status: Integer, responseBody: String): StubMapping =
+    stubFor(put(urlMatching(url))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(responseBody)
+      )
+    )
 
-	def resetWiremock(): Unit = WireMock.reset()
+  def stubGet(url: String, status: Integer, responseBody: String): StubMapping =
+    stubFor(get(urlMatching(url))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(responseBody)
+      )
+    )
 
-	def stubPost(url: String, status: Integer, responseBody: String): StubMapping =
-		stubFor(post(urlMatching(url))
-			.willReturn(
-				aResponse()
-					.withStatus(status)
-					.withBody(responseBody)
-			)
-		)
+  def stubGet(url: String, status: Integer): StubMapping =
+    stubFor(get(urlMatching(url))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withHeader("Content-Type", "text/json")
+      )
+    )
 
-	def stubPut(url: String, status: Integer, responseBody: String): StubMapping =
-		stubFor(put(urlMatching(url))
-			.willReturn(
-				aResponse()
-					.withStatus(status)
-					.withBody(responseBody)
-			)
-		)
+  def stubPatch(url: String, status: Integer, responseBody: String): StubMapping =
+    stubFor(patch(urlMatching(url))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(responseBody)
+      )
+    )
 
-	def stubGet(url: String, status: Integer, responseBody: String): StubMapping =
-		stubFor(get(urlMatching(url))
-			.willReturn(
-				aResponse()
-					.withStatus(status)
-					.withBody(responseBody)
-			)
-		)
-
-	def stubGet(url: String, status: Integer): StubMapping =
-		stubFor(get(urlMatching(url))
-			.willReturn(
-				aResponse()
-					.withStatus(status)
-					.withHeader("Content-Type", "text/json")
-			)
-		)
-
-	def stubPatch(url: String, status: Integer, responseBody: String): StubMapping =
-		stubFor(patch(urlMatching(url))
-			.willReturn(
-				aResponse()
-					.withStatus(status)
-					.withBody(responseBody)
-			)
-		)
-
-	def stubDelete(url: String, status: Integer, responseBody: String): StubMapping =
-		stubFor(delete(urlMatching(url))
-			.willReturn(
-				aResponse()
-					.withStatus(status)
-					.withBody(responseBody)
-			)
-		)
+  def stubDelete(url: String, status: Integer, responseBody: String): StubMapping =
+    stubFor(delete(urlMatching(url))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(responseBody)
+      )
+    )
 
 }

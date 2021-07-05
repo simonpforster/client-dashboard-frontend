@@ -17,13 +17,10 @@
 package uk.gov.hmrc.examplefrontend.config
 
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
-import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 
 class ErrorHandlerSpec extends AbstractTest {
 
-
-
-	"standardErrorTemlpate" should {
+	"standardErrorTemplate" should {
 		"return" in {
 
 		}
