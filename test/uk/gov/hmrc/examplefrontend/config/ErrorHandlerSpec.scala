@@ -20,10 +20,10 @@ import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 class ErrorHandlerSpec extends AbstractTest {
 
-	"standardErrorTemplate" should {
-		"return" in {
+  "standardErrorTemplate" should {
+    "return" in {
 
-		}
-	}
+    }
+  }
 
 }
