@@ -28,13 +28,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LoginController @Inject()(ws: WSClient,
-                                mcc: MessagesControllerComponents,
-                                loginPage: LoginPage,
-                                dataConnector: DataConnector,
-                                logoutSuccessPage: LogoutSuccess,
-                                implicit val ec: ExecutionContext)
-  extends FrontendController(mcc) with I18nSupport {
+class LoginController @Inject()(
+  mcc: MessagesControllerComponents,
+  loginPage: LoginPage,
+  dataConnector: DataConnector,
+  logoutSuccessPage:LogoutSuccess,
+  implicit val ec: ExecutionContext)
+    extends FrontendController(mcc) with I18nSupport{
 
 
   def login: Action[AnyContent] = Action { implicit request =>
@@ -52,7 +52,8 @@ class LoginController @Inject()(ws: WSClient,
         Future.successful(BadRequest(loginPage(formWithErrors)))
       }, success => {
         dataConnector.login(success).map {
-          case Some(client) => Redirect("/example-frontend/dashboard").withSession(request.session
+          case Some(client) =>
+            val call = Redirect("/example-frontend/dashboard").withSession(request.session
             + ("crn" -> s"${client.crn}")
             + ("name" -> s"${client.name}")
             + ("businessName" -> s"${client.businessName}")
@@ -60,7 +61,12 @@ class LoginController @Inject()(ws: WSClient,
             + ("propertyNumber" -> s"${client.propertyNumber}")
             + ("postcode" -> s"${client.postcode}")
             + ("businessType" -> s"${client.businessType}")
-          )
+            )
+            client.arn match {
+              case Some(arn) => call.withSession(call.session + ("arn" -> arn))
+              case None => call
+            }
+
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
         }
       } recover { case _ => InternalServerError }

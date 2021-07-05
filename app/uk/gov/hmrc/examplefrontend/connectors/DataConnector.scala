@@ -24,8 +24,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
-  private val host: String = "http://localhost:9006"
-  private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+	private val host = "http://localhost:9006"
+
+
+	private def wspost(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+
+	private def wspatch(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
 
   def login(user: User): Future[Option[Client]] = {
     val userCredentials = Json.obj(
@@ -59,10 +63,25 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       })
   }
 
-  def createObjAndPOST(agent: Agent): Future[Option[Agent]] = {
-    val ARN: JsObject = Json.obj(
-      "arn" -> agent.arn
-    )
-    wspost("http://localhost:9005/submit-arn", ARN).map { result => Json.fromJson[Agent](result.json).asOpt }
-  }
+	def addArn(client: Client, agent: Agent): Future[Boolean] = {
+		val clientAgentPair = Json.obj(
+			"crn" -> client.crn,
+			"arn" -> agent.arn
+		)
+		wspatch("/add-agent", clientAgentPair).map{_.status match{
+			case 204 => true
+			case _ => false
+		}}
+	}
+
+	def removeArn(client: Client, agent: Agent): Future[Boolean] = {
+		val clientAgentPair = Json.obj(
+			"crn" -> client.crn,
+			"arn" -> agent.arn
+		)
+		wspatch("/remove-agent", clientAgentPair).map{_.status match {
+			case 204 => true
+			case _ => false
+		}}
+	}
 }

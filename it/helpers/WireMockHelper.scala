@@ -78,6 +78,15 @@ trait WireMockHelper {
 			)
 		)
 
+	def stubPatch(url: String, status: Integer, responseBody: String): StubMapping =
+		stubFor(patch(urlMatching(url))
+			.willReturn(
+				aResponse()
+					.withStatus(status)
+					.withBody(responseBody)
+			)
+		)
+
 	def stubDelete(url: String, status: Integer, responseBody: String): StubMapping =
 		stubFor(delete(urlMatching(url))
 			.willReturn(
