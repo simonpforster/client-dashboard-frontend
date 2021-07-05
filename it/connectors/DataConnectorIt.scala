@@ -24,7 +24,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{CRN, Client, User}
+import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
 
 class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with BeforeAndAfterAll{
 
@@ -87,12 +87,59 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 			}
 		}
 
-		"arn" should {
-			"" in {
+		"add arn" should {
+			"succeed" in {
+				stubPatch("/add-agent", 204, "")
 
+				val result = await(connector.addArn(testClient, Agent("testArn")))
+
+				result shouldBe true
+			}
+
+			"fail because of not found" in {
+				stubPatch("/add-agent", 404, "")
+
+				val result = await(connector.addArn(testClient, Agent("testArn")))
+
+				result shouldBe false
+			}
+
+
+			"fail because of conflict" in {
+				stubPatch("/add-agent", 409, "")
+
+				val result = await(connector.addArn(testClient, Agent("testArn")))
+
+				result shouldBe false
 			}
 		}
 
+		"remove arn" should {
+			"succeed" in {
+				stubPatch("/remove-agent", 204, "")
+
+				val result = await(connector.removeArn(testClient, Agent("testArn")))
+
+				result shouldBe true
+			}
+
+			"fail because of not found" in {
+				stubPatch("/remove-agent", 404, "")
+
+				val result = await(connector.removeArn(testClient, Agent("testArn")))
+
+				result shouldBe false
+			}
+
+
+			"fail because of conflict" in {
+				stubPatch("/remove-agent", 409, "")
+
+				val result = await(connector.removeArn(testClient, Agent("testArn")))
+
+				result shouldBe false
+			}
+		}
 	}
 
 }

@@ -9,20 +9,22 @@
 <h3 class="govuk-heading-s"> @client.name </h3>
 <h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>
 
-@helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.arnSubmit(), 'class -> "govuk-body") {
-@if(client.arn.isDefined ){
-<p>You're account is linked with @client.arn</p>
-}else {
-@if(agentForm.errors("arn").nonEmpty) {
-    @govukInput(Input(id = "arn", name = "arn",value = Some(agentForm.data("arn")), label = Label(content = Text("Enter ARN:")), hint = Some(Hint(content = Text("The ARN. For example, ARNNUMBER."))), errorMessage = Some(ErrorMessage(content = Text("Enter the ARN")))))
-}else{
-    @govukInput(Input(id="arn",name = "arn",value = Some(agentForm.data("arn")),label = Label(isPageHeading = true,content = Text("Enter ARN:"))))
-}
-<button class="govuk-button" data-module="govuk-button" type="submit" id="submit">Add</button>
-}
-}
-<a class="govuk-button govuk-button--warning" type="submit" data-module="govuk-button" id="DeleteUser"
-   href="@uk.gov.hmrc.examplefrontend.controllers.routes.DeleteClientController.areYouSure">
+
+        @if(client.arn.isDefined){
+            <p>You're account is linked with @client.arn</p>
+            <a class="govuk-button" data-module="govuk-button" href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.arnRemove()" id="remove">Remove</a>
+        }else {
+            @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.arnSubmit(), 'class -> "govuk-body") {
+                @if(agentForm.errors("arn").nonEmpty) {
+                    @govukInput(Input(id = "arn", name = "arn",value = Some(agentForm.data("arn")), label = Label(content = Text("Enter ARN:")), hint = Some(Hint(content = Text("The ARN. For example, ARNNUMBER."))), errorMessage = Some(ErrorMessage(content = Text("Enter the ARN")))))
+                }else{
+                    @govukInput(Input(id="arn",name = "arn",value = Some(agentForm.data("arn")),label = Label(isPageHeading = true,content = Text("Enter ARN:"))))
+                }
+                <button class="govuk-button" data-module="govuk-button" type="submit" id="submit">Add</button>
+            }
+        }
+
+<a class="govuk-button govuk-button--warning" type="submit" data-module="govuk-button" id="DeleteUser" href="@uk.gov.hmrc.examplefrontend.controllers.routes.DeleteClientController.areYouSure">
     Delete account
 </a>
 

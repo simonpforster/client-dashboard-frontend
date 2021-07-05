@@ -37,13 +37,11 @@ class LoginControllerSpec extends AbstractTest {
 
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
-  lazy val ws: WSClient = app.injector.instanceOf[WSClient]
 
 
   val fakeRequest = FakeRequest("GET", "/example-frontend/login")
-  val wsclient = app.injector.instanceOf[WSClient]
   val connector = mock(classOf[DataConnector])
-  val controller = new LoginController(wsclient, mcc, loginPage, connector,logoutSuccess,executionContext)
+  val controller = new LoginController(mcc, loginPage, connector,logoutSuccess,executionContext)
 
   val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType", Some("testArn"))
   val testClientJs = Json.parse(
