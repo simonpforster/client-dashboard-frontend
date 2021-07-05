@@ -16,34 +16,27 @@
 
 package uk.gov.hmrc.examplefrontend.models
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import play.api.libs.json.{JsSuccess, JsValue, Json}
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
-
 class AgentSpec extends AbstractTest {
 
-  val agentModel: Agent = Agent("ANAGENT")
-
+  val agentModel: Agent = Agent(arn = "ANAGENT")
   val agentJs: JsValue = Json.parse(
     """{
       "arn": "ANAGENT"
       }""".stripMargin
   )
-
   "Agent" can {
     "format to json" should {
       "succeed" in {
         Json.toJson(agentModel) shouldBe agentJs
       }
     }
-
-
     "format from json" should {
       "succeed" in {
         Json.fromJson[Agent](agentJs) shouldBe JsSuccess(agentModel)
       }
-
     }
   }
 }

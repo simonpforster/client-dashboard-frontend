@@ -21,12 +21,11 @@ import org.mockito.Mockito.{mock, when}
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.MessagesControllerComponents
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.views.html.{DashboardPage, DeleteAreYouSure, DeleteSuccess}
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeleteControllerSpec extends AbstractTest {
@@ -47,54 +46,60 @@ class DeleteControllerSpec extends AbstractTest {
   val dataConnector: DataConnector = mock(classOf[DataConnector])
 
 
-  private val fakeRequest = FakeRequest("GET", "/example-frontend/delete-select")
-  private val controller = new DeleteClientController(Helpers.stubMessagesControllerComponents(), dataConnector, deleteSuccessPage, areYouSure, ec)
-  //private val controller = app.injector.instanceOf[DeleteClientController]
+  private val fakeRequest = FakeRequest(
+    method = "GET",
+    path = "/example-frontend/delete-select")
+  private val controller = new DeleteClientController(
+    mcc = Helpers.stubMessagesControllerComponents(),
+    dataConnector = dataConnector,
+    deleteSuccess = deleteSuccessPage,
+    deleteAreYouSure = areYouSure,
+    ec = ec)
 
-    "areYouSure()" should {
-      "return 200" in {
-        val result = controller.areYouSure().apply(fakeRequest)
-        status(result) shouldBe Status.OK
-      }
-
-      "return HTML" in {
-        val result = controller.areYouSure().apply(fakeRequest)
-        contentType(result) shouldBe Some("text/html")
-        charset(result) shouldBe Some("utf-8")
-      }
+  "areYouSure()" should {
+    "return 200" in {
+      val result: Future[Result] = controller.areYouSure().apply(fakeRequest)
+      status(result) shouldBe Status.OK
     }
 
-    "deleteClient()" should{
-      "delete" in {
-        when(dataConnector.deleteClient(any())) thenReturn Future(true)
-        val result = controller.deleteClient().apply(fakeRequest.withSession("crn"-> "testCrn"))
-        status(result) shouldBe 303
-      }
+    "return HTML" in {
+      val result: Future[Result] = controller.areYouSure().apply(fakeRequest)
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
+    }
+  }
+
+  "deleteClient()" should {
+    "delete" in {
+      when(dataConnector.deleteClient(any())) thenReturn Future(true)
+      val result: Future[Result] = controller.deleteClient().apply(fakeRequest.withSession("crn" -> "testCrn"))
+      status(result) shouldBe 303
+    }
 
     "delete without crn (unsuccessful)" in {
       val result = controller.deleteClient().apply(fakeRequest.withSession())
       status(result) shouldBe 400
     }
 
-      "delete (unsuccessfully)" in {
-        when(dataConnector.deleteClient(any())) thenReturn Future(false)
-        val result = controller.deleteClient().apply(fakeRequest.withSession("crn"-> "testCrn"))
-        status(result) shouldBe 502
-      }
+    "delete (unsuccessfully)" in {
+      when(dataConnector.deleteClient(any())) thenReturn Future(false)
+      val result: Future[Result] = controller.deleteClient().apply(fakeRequest.withSession("crn" -> "testCrn"))
+      status(result) shouldBe 502
+    }
   }
 
-    "deleteClientSuccessful()" should {
-      "return 200" in {
-        val result = controller.deleteClientSuccessful().apply(fakeRequest)
-        status(result) shouldBe Status.OK
-      }
-
-      "return HTML" in {
-        val result = controller.deleteClientSuccessful().apply(fakeRequest)
-        contentType(result) shouldBe Some("text/html")
-        charset(result) shouldBe Some("utf-8")
-      }
+  "deleteClientSuccessful()" should {
+    "return 200" in {
+      val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest)
+      status(result) shouldBe Status.OK
     }
+
+    "return HTML" in {
+      val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest)
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
+    }
+  }
 }
 
 
