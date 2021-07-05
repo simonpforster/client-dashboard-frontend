@@ -37,7 +37,9 @@ class LoginControllerSpec extends AbstractTest {
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
 
-  val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/example-frontend/login")
+  val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = "/example-frontend/login")
   val connector: DataConnector = mock(classOf[DataConnector])
   val controller: LoginController = new LoginController(
     mcc = mcc,
@@ -46,7 +48,15 @@ class LoginControllerSpec extends AbstractTest {
     logoutSuccessPage = logoutSuccess,
     ec = executionContext)
 
-  val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType", Some("testArn"))
+  val testClient: Client = Client(
+    crn = "testCrn",
+    name = "testName",
+    businessName = "testBusiness",
+    contactNumber = "testContact",
+    propertyNumber = 12,
+    postcode = "testPostcode",
+    businessType = "testBusinessType",
+    arn = Some("testArn"))
   val testClientJs: JsValue = Json.parse(
     """{
       |  "crn": "testCrn",
@@ -107,6 +117,7 @@ class LoginControllerSpec extends AbstractTest {
       when(connector.login(any())) thenReturn Future.successful(None)
 
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe UNAUTHORIZED

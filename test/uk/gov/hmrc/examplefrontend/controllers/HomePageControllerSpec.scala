@@ -25,7 +25,9 @@ import scala.concurrent.Future
 
 class HomePageControllerSpec extends AbstractTest {
 
-  private val fakeRequest = FakeRequest("GET", "/example-frontend")
+  private val fakeRequest = FakeRequest(
+    method = "GET",
+    path = "/example-frontend")
   private val controller = app.injector.instanceOf[HomePageController]
 
   "GET /example-frontend" should {
