@@ -17,12 +17,12 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
 import play.api.http.Status
-import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
-import play.api.mvc.MessagesControllerComponents
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
@@ -34,17 +34,30 @@ import scala.concurrent.{ExecutionContext, Future}
 class LoginControllerSpec extends AbstractTest {
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
 
+  val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = "/example-frontend/login")
+  val connector: DataConnector = mock(classOf[DataConnector])
+  val controller: LoginController = new LoginController(
+    mcc = mcc,
+    loginPage = loginPage,
+    dataConnector = connector,
+    logoutSuccessPage = logoutSuccess,
+    ec = executionContext)
 
-  val fakeRequest = FakeRequest("GET", "/example-frontend/login")
-  val connector = mock(classOf[DataConnector])
-  val controller = new LoginController(mcc, loginPage, connector,logoutSuccess,executionContext)
-
-  val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType", Some("testArn"))
-  val testClientJs = Json.parse(
+  val testClient: Client = Client(
+    crn = "testCrn",
+    name = "testName",
+    businessName = "testBusiness",
+    contactNumber = "testContact",
+    propertyNumber = 12,
+    postcode = "testPostcode",
+    businessType = "testBusinessType",
+    arn = Some("testArn"))
+  val testClientJs: JsValue = Json.parse(
     """{
       |  "crn": "testCrn",
       |  "name": "testName",
@@ -57,33 +70,32 @@ class LoginControllerSpec extends AbstractTest {
 
   "login() method GET" should {
     "return 200" in {
-      val result = controller.login(fakeRequest)
+      val result: Future[Result] = controller.login(fakeRequest)
       status(result) shouldBe Status.OK
     }
   }
 
-    "logOut() method GET" should{
-      "return 303" in {
-        val result = controller.logOut(fakeRequest)
-        status(result) shouldBe 200
-        val doc=Jsoup.parse(contentAsString(result))
-        Option(doc.getElementById("Logout-Success")).isDefined shouldBe true
-      }
+  "logOut() method GET" should {
+    "return 303" in {
+      val result: Future[Result] = controller.logOut(fakeRequest)
+      status(result) shouldBe 200
+      val doc: Document = Jsoup.parse(contentAsString(result))
+      Option(doc.getElementById("Logout-Success")).isDefined shouldBe true
     }
+  }
 
-    "return HTML" in {
-      val result = controller.login(fakeRequest)
-      contentType(result) shouldBe Some("text/html")
-      charset(result)     shouldBe Some("utf-8")
-    }
-
+  "return HTML" in {
+    val result = controller.login(fakeRequest)
+    contentType(result) shouldBe Some("text/html")
+    charset(result) shouldBe Some("utf-8")
+  }
 
 
   "loginSubmit() method POST" should {
 
     "return BadRequest when there are errors on the input fields" in {
       val fakeRequestWithFormErrors = fakeRequest.withFormUrlEncodedBody("crn" -> "", "password" -> "")
-      lazy val result = controller.loginSubmit(fakeRequestWithFormErrors)
+      lazy val result: Future[Result] = controller.loginSubmit(fakeRequestWithFormErrors)
 
       Jsoup.parse(contentAsString(result)).getElementById("crn").`val` shouldBe ""
       Jsoup.parse(contentAsString(result)).getElementById("password").`val` shouldBe ""
@@ -93,20 +105,20 @@ class LoginControllerSpec extends AbstractTest {
     "redirect to the dashboard page with the corresponding session" in {
       when(connector.login(any())).thenReturn(Future.successful(Some(testClient)))
 
-      val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
 
-      val result = controller.loginSubmit(fakeRequestSubmit)
+      val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe 303
       session(result).get("crn") shouldBe Some("testCrn")
     }
 
     "return Unauthorized" in {
-      when(connector.login(any())).thenReturn(Future.successful(None))
+      when(connector.login(any())) thenReturn Future.successful(None)
 
-      val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
 
-      val result = controller.loginSubmit(fakeRequestSubmit)
+      val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe UNAUTHORIZED
     }

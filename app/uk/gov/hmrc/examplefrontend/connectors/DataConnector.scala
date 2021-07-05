@@ -24,19 +24,20 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
-	private val host = "http://localhost:9006"
+  private val host = "http://localhost:9006"
 
+  private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
-	private def wspost(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+  private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
 
-	private def wspatch(url: String, jsObject: JsObject) = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
+  private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).withBody(jsObject).delete()
 
   def login(user: User): Future[Option[Client]] = {
     val userCredentials = Json.obj(
       "crn" -> user.crn,
       "password" -> user.password
     )
-    wspost("/login", userCredentials).map { response =>
+    wspost(url = "/login", jsObject = userCredentials).map { response =>
       response.status match {
         case 200 =>
           response.json.validate[Client] match {
@@ -48,40 +49,40 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
     }
   }
 
-  def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = {
-    ws.url(host + url).withBody(jsObject).delete()
-  }
-
   def deleteClient(crn: CRN): Future[Boolean] = {
     val newCRN: JsObject = Json.obj(
       "crn" -> crn.crn
     )
-    wsdelete("/delete-client", newCRN).map(
+    wsdelete(url = "/delete-client", jsObject = newCRN).map(
       _.status match {
         case 204 => true
         case _ => false
       })
   }
 
-	def addArn(client: Client, agent: Agent): Future[Boolean] = {
-		val clientAgentPair = Json.obj(
-			"crn" -> client.crn,
-			"arn" -> agent.arn
-		)
-		wspatch("/add-agent", clientAgentPair).map{_.status match{
-			case 204 => true
-			case _ => false
-		}}
-	}
+  def addArn(client: Client, agent: Agent): Future[Boolean] = {
+    val clientAgentPair = Json.obj(
+      "crn" -> client.crn,
+      "arn" -> agent.arn
+    )
+    wspatch(url = "/add-agent", jsObject = clientAgentPair).map {
+      _.status match {
+        case 204 => true
+        case _ => false
+      }
+    }
+  }
 
-	def removeArn(client: Client, agent: Agent): Future[Boolean] = {
-		val clientAgentPair = Json.obj(
-			"crn" -> client.crn,
-			"arn" -> agent.arn
-		)
-		wspatch("/remove-agent", clientAgentPair).map{_.status match {
-			case 204 => true
-			case _ => false
-		}}
-	}
+  def removeArn(client: Client, agent: Agent): Future[Boolean] = {
+    val clientAgentPair = Json.obj(
+      "crn" -> client.crn,
+      "arn" -> agent.arn
+    )
+    wspatch(url = "/remove-agent", jsObject = clientAgentPair).map {
+      _.status match {
+        case 204 => true
+        case _ => false
+      }
+    }
+  }
 }

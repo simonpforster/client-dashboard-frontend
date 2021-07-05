@@ -21,125 +21,153 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
 
-class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with BeforeAndAfterAll{
+class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with BeforeAndAfterAll {
 
-	lazy val connector: DataConnector = app.injector.instanceOf[DataConnector]
+  lazy val connector: DataConnector = app.injector.instanceOf[DataConnector]
 
-	val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType")
-	val testClientJson = Json.toJson(testClient)
+  val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType")
+  val testClientJson: JsValue = Json.toJson(testClient)
 
-	val testUser: User = User("testCrn", "testPass")
+  val testUser: User = User("testCrn", "testPass")
 
-	lazy val crn = Json.toJson(crnTest)
+  lazy val crn: JsValue = Json.toJson(crnTest)
 
-	val crnTest: CRN =CRN("crnTest")
+  val crnTest: CRN = CRN("crnTest")
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    startWiremock()
+  }
 
+  override def afterAll(): Unit = {
+    stopWiremock()
+    super.afterAll()
+  }
 
-	override def beforeAll(): Unit = {
-		super.beforeAll()
-		startWiremock()
-	}
+  "DataConnector" can {
 
-	override def afterAll(): Unit = {
-		stopWiremock()
-		super.afterAll()
-	}
+    "delete" should {
+      "succesfully delete a client" in {
+        stubDelete(
+          url = "/delete-client",
+          status = 204,
+          responseBody = "")
 
-	"DataConnector" can {
+        val result: Boolean = await(connector.deleteClient(crnTest))
 
-		"delete" should{
-			"succesfully delete a client"in{
-				stubDelete("/delete-client",status = 204,"")
-				val result:Boolean = await(connector.deleteClient(crnTest))
-				result should be (true)
-			}
-		}
+        result should be(true)
+      }
+    }
 
-		"login" should {
-			"succesfully receive a client" in {
-				stubPost("/login", 200, Json.stringify(testClientJson))
+    "login" should {
+      "succesfully receive a client" in {
+        stubPost(
+          url = "/login",
+          status = 200,
+          responseBody = Json.stringify(testClientJson))
 
-				val result = await(connector.login(testUser))
+        val result = await(connector.login(testUser))
 
-				result shouldBe Some(testClient)
-			}
+        result shouldBe Some(testClient)
+      }
 
-			"fail because of unauthorized" in {
-				stubPost("/login", 401, Json.stringify(testClientJson))
+      "fail because of unauthorized" in {
+        stubPost(
+          url = "/login",
+          status = 401,
+          responseBody = Json.stringify(testClientJson))
 
-				val result = await(connector.login(testUser))
+        val result = await(connector.login(testUser))
 
-				result shouldBe None
-			}
+        result shouldBe None
+      }
 
-			"fail because of bad request" in {
-				stubPost("/login", 400,"")
+      "fail because of bad request" in {
+        stubPost(
+          url = "/login",
+          status = 400,
+          responseBody = "")
 
-				val result = await(connector.login(testUser))
+        val result = await(connector.login(testUser))
 
-				result shouldBe None
-			}
-		}
+        result shouldBe None
+      }
+    }
 
-		"add arn" should {
-			"succeed" in {
-				stubPatch("/add-agent", 204, "")
+    "add arn" should {
+      "succeed" in {
+        stubPatch(
+          url = "/add-agent",
+          status = 204,
+          responseBody = "")
 
-				val result = await(connector.addArn(testClient, Agent("testArn")))
+        val result = await(connector.addArn(testClient, Agent("testArn")))
 
-				result shouldBe true
-			}
+        result shouldBe true
+      }
 
-			"fail because of not found" in {
-				stubPatch("/add-agent", 404, "")
+      "fail because of not found" in {
+        stubPatch(
+          url = "/add-agent",
+          status = 404,
+          responseBody = "")
 
-				val result = await(connector.addArn(testClient, Agent("testArn")))
+        val result = await(connector.addArn(testClient, Agent("testArn")))
 
-				result shouldBe false
-			}
+        result shouldBe false
+      }
 
+      "fail because of conflict" in {
+        stubPatch(
+          url = "/add-agent",
+          status = 409,
+          responseBody = "")
 
-			"fail because of conflict" in {
-				stubPatch("/add-agent", 409, "")
+        val result = await(connector.addArn(testClient, Agent("testArn")))
 
-				val result = await(connector.addArn(testClient, Agent("testArn")))
+        result shouldBe false
+      }
+    }
 
-				result shouldBe false
-			}
-		}
+    "remove arn" should {
+      "succeed" in {
+        stubPatch(
+          url = "/remove-agent",
+          status = 204,
+          responseBody = "")
 
-		"remove arn" should {
-			"succeed" in {
-				stubPatch("/remove-agent", 204, "")
+        val result = await(connector.removeArn(testClient, Agent("testArn")))
 
-				val result = await(connector.removeArn(testClient, Agent("testArn")))
+        result shouldBe true
+      }
 
-				result shouldBe true
-			}
+      "fail because of not found" in {
+        stubPatch(
+          url = "/remove-agent",
+          status = 404,
+          responseBody = "")
 
-			"fail because of not found" in {
-				stubPatch("/remove-agent", 404, "")
+        val result = await(connector.removeArn(testClient, Agent("testArn")))
 
-				val result = await(connector.removeArn(testClient, Agent("testArn")))
+        result shouldBe false
+      }
 
-				result shouldBe false
-			}
+      "fail because of conflict" in {
+        stubPatch(
+          url = "/remove-agent",
+          status = 409,
+          responseBody = "")
 
+        val result = await(connector.removeArn(testClient, Agent("testArn")))
 
-			"fail because of conflict" in {
-				stubPatch("/remove-agent", 409, "")
-
-				val result = await(connector.removeArn(testClient, Agent("testArn")))
-
-				result shouldBe false
-			}
-		}
-	}
+        result shouldBe false
+      }
+    }
+  }
 
 }
