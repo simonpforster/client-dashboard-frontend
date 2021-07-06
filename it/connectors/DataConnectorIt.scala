@@ -30,14 +30,25 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 
   lazy val connector: DataConnector = app.injector.instanceOf[DataConnector]
 
-  val testClient: Client = Client("testCrn", "testName", "testBusiness", "testContact", 12, "testPostcode", "testBusinessType")
+  val testClient: Client = Client(
+    crn = "testCrn",
+    name = "testName",
+    businessName = "testBusiness",
+    contactNumber = "testContact",
+    propertyNumber = 12,
+    postcode = "testPostcode",
+    businessType = "testBusinessType")
+
   val testClientJson: JsValue = Json.toJson(testClient)
 
-  val testUser: User = User("testCrn", "testPass")
+  val testUser: User = User(
+    crn = "testCrn",
+    password = "testPass")
 
   lazy val crn: JsValue = Json.toJson(crnTest)
 
-  val crnTest: CRN = CRN("crnTest")
+  val crnTest: CRN = CRN(
+    crn = "crnTest")
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -49,8 +60,8 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     super.afterAll()
   }
 
-  "DataConnector" can {
 
+  "DataConnector" can {
     "delete" should {
       "succesfully delete a client" in {
         stubDelete(
@@ -60,7 +71,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 
         val result: Boolean = await(connector.deleteClient(crnTest))
 
-        result should be(true)
+        result shouldBe true
       }
     }
 
@@ -71,7 +82,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 200,
           responseBody = Json.stringify(testClientJson))
 
-        val result = await(connector.login(testUser))
+        val result: Option[Client] = await(connector.login(testUser))
 
         result shouldBe Some(testClient)
       }
@@ -82,7 +93,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 401,
           responseBody = Json.stringify(testClientJson))
 
-        val result = await(connector.login(testUser))
+        val result: Option[Client] = await(connector.login(testUser))
 
         result shouldBe None
       }
@@ -93,7 +104,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 400,
           responseBody = "")
 
-        val result = await(connector.login(testUser))
+        val result: Option[Client] = await(connector.login(testUser))
 
         result shouldBe None
       }
@@ -106,7 +117,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 204,
           responseBody = "")
 
-        val result = await(connector.addArn(testClient, Agent("testArn")))
+        val result: Boolean = await(connector.addArn(testClient, Agent("testArn")))
 
         result shouldBe true
       }
@@ -117,7 +128,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 404,
           responseBody = "")
 
-        val result = await(connector.addArn(testClient, Agent("testArn")))
+        val result: Boolean = await(connector.addArn(testClient, Agent("testArn")))
 
         result shouldBe false
       }
@@ -128,7 +139,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 409,
           responseBody = "")
 
-        val result = await(connector.addArn(testClient, Agent("testArn")))
+        val result: Boolean = await(connector.addArn(testClient, Agent("testArn")))
 
         result shouldBe false
       }
@@ -141,7 +152,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 204,
           responseBody = "")
 
-        val result = await(connector.removeArn(testClient, Agent("testArn")))
+        val result: Boolean = await(connector.removeArn(testClient, Agent("testArn")))
 
         result shouldBe true
       }
@@ -152,7 +163,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 404,
           responseBody = "")
 
-        val result = await(connector.removeArn(testClient, Agent("testArn")))
+        val result: Boolean = await(connector.removeArn(testClient, Agent("testArn")))
 
         result shouldBe false
       }
@@ -163,7 +174,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           status = 409,
           responseBody = "")
 
-        val result = await(connector.removeArn(testClient, Agent("testArn")))
+        val result: Boolean = await(connector.removeArn(testClient, Agent("testArn")))
 
         result shouldBe false
       }
