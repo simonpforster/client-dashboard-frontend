@@ -19,12 +19,17 @@ package uk.gov.hmrc.examplefrontend.connectors
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
   private val host = "http://localhost:9006"
+
+  private val Agenthost = "http://localhost:9009"
+
+  private def wspostagent(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(Agenthost + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
   private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
@@ -33,7 +38,7 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
   private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).withBody(jsObject).delete()
 
   def login(user: User): Future[Option[Client]] = {
-    val userCredentials = Json.obj(
+    val userCredentials: JsObject = Json.obj(
       "crn" -> user.crn,
       "password" -> user.password
     )
@@ -58,6 +63,16 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
         case 204 => true
         case _ => false
       })
+  }
+
+  def checkArn(agent: Agent): Future[Boolean] = {
+    wspostagent("/readAgent", Json.toJson(agent).as[JsObject]).map {
+      _.status match {
+        case 200 => true
+
+        case _ => false
+      }
+    }
   }
 
   def addArn(client: Client, agent: Agent): Future[Boolean] = {

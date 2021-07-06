@@ -17,7 +17,7 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.http.Status
-import play.api.mvc.Result
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
 
@@ -25,7 +25,7 @@ import scala.concurrent.Future
 
 class HomePageControllerSpec extends AbstractTest {
 
-  private val fakeRequest = FakeRequest(
+  private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = "/example-frontend")
   private val controller = app.injector.instanceOf[HomePageController]
