@@ -85,7 +85,7 @@ class LoginControllerSpec extends AbstractTest {
   }
 
   "return HTML" in {
-    val result = controller.login(fakeRequest)
+    val result: Future[Result] = controller.login(fakeRequest)
     contentType(result) shouldBe Some("text/html")
     charset(result) shouldBe Some("utf-8")
   }
@@ -94,7 +94,7 @@ class LoginControllerSpec extends AbstractTest {
   "loginSubmit() method POST" should {
 
     "return BadRequest when there are errors on the input fields" in {
-      val fakeRequestWithFormErrors = fakeRequest.withFormUrlEncodedBody("crn" -> "", "password" -> "")
+      val fakeRequestWithFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "", "password" -> "")
       lazy val result: Future[Result] = controller.loginSubmit(fakeRequestWithFormErrors)
 
       Jsoup.parse(contentAsString(result)).getElementById("crn").`val` shouldBe ""
@@ -127,7 +127,7 @@ class LoginControllerSpec extends AbstractTest {
     "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
       when(connector.login(any())).thenReturn(Future.failed(new Exception))
 
-      val fakeRequestSubmit = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
 
       lazy val result = controller.loginSubmit(fakeRequestSubmit)
 

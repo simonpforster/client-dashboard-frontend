@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
+import play.api.data.Form
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -57,17 +59,19 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       request.session.get("postcode").getOrElse(""),
       request.session.get("businessType").getOrElse(""),
       request.session.get("arn"))
-    val emptyForm = AgentForm.form.fill(Agent(""))
-    val formWithErrors = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
-
+    val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
+    val formWithErrors: Form[Agent] = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
     AgentForm.form.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(dashboardPage(clientOne, formWithErrors)))
       },
       success => {
-        dataConnector.addArn(clientOne, success) map {
-          case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm)).withSession(request.session + ("arn" -> success.arn))
-          case false => BadRequest(dashboardPage(client = clientOne, agentForm = formWithErrors))
+        dataConnector.checkArn(success).flatMap {
+          case true => dataConnector.addArn(clientOne, success) map {
+            case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm)).withSession(request.session + ("arn" -> success.arn))
+            case false => BadRequest(dashboardPage(client = clientOne, agentForm = formWithErrors)).withSession(request.session)
+          }
+          case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors.withError("arn", "no"))))
         }
       }
     )
@@ -82,14 +86,14 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       request.session.get("postcode").getOrElse(""),
       request.session.get("businessType").getOrElse(""),
       request.session.get("arn"))
-    val emptyForm = AgentForm.form.fill(Agent(""))
+    val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
     clientOne.arn match {
       case Some(arn) =>
         dataConnector.removeArn(clientOne, Agent(arn)).map {
           case true => Ok(dashboardPage(client = clientOne.copy(arn = None), agentForm = emptyForm)).withSession(request.session - "arn")
-          case false => BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm))
+          case false => BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm)).withSession(request.session)
         }
-      case None => Future(BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm)))
+      case None => Future(NotFound(dashboardPage(client = clientOne, agentForm = emptyForm)).withSession(request.session))
     }
   }
 }
