@@ -11,7 +11,7 @@
 
 
 @if(client.arn.isDefined){
-<p>You're account is linked with @client.arn</p>
+<p id="arn-label">You're account is linked with @client.arn</p>
 <a class="govuk-button" data-module="govuk-button"
    href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.arnRemove()" id="remove">Remove</a>
 }else {

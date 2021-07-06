@@ -26,7 +26,6 @@ import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.views.html.{DashboardPage, DeleteAreYouSure, DeleteSuccess}
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class DeleteControllerSpec extends AbstractTest {
@@ -45,8 +44,7 @@ class DeleteControllerSpec extends AbstractTest {
   lazy val areYouSure: DeleteAreYouSure = app.injector.instanceOf[DeleteAreYouSure]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   val dataConnector: DataConnector = mock(classOf[DataConnector])
-
-
+  
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = "/example-frontend/delete-select")
