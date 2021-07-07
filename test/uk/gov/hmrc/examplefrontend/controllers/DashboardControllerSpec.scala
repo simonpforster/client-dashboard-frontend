@@ -134,7 +134,7 @@ class DashboardControllerSpec extends AbstractTest {
 
     "return Ok" should {
       "correct input" in {
-        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemove.withFormUrlEncodedBody("arn" -> "testingArn").withSession("crn" -> "testCrn").withSession("arn" -> "testArn")
+        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemove.withFormUrlEncodedBody("arn" -> "testingArn").withSession("crn" -> "testCrn", "clientArn" -> "testArn")
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(true)
         val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
 
@@ -152,7 +152,7 @@ class DashboardControllerSpec extends AbstractTest {
       }
       "no arn in session" in {
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(false)
-        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemove.withFormUrlEncodedBody("arn" -> "testingArn").withSession("crn" -> "testCrn").withSession("arn" -> "testArn")
+        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemove.withFormUrlEncodedBody("arn" -> "testingArn").withSession("crn" -> "testCrn", "clientArn" -> "testArn")
         val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
 
         status(result) shouldBe BAD_REQUEST
