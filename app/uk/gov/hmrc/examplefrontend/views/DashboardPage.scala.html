@@ -10,6 +10,7 @@
 <h2 class="govuk-heading-s"> Username: @client.name </h2>
 <h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>
 
+
 @if(client.arn.isDefined){
     <p id="arn-label" class="govuk-body">You're account is linked with <b>@client.arn</b></p>
 
@@ -31,9 +32,10 @@
 }
 <hr>
 <div>
-    <a class="govuk-link" type="submit" data-module="govuk-button" id="delete-user" href="@uk.gov.hmrc.examplefrontend.controllers.routes.DeleteClientController.areYouSure">
+    <a class="govuk-link" type="submit" data-module="govuk-button govuk-button--secondary" id="delete-user" href="@uk.gov.hmrc.examplefrontend.controllers.routes.DeleteClientController.areYouSure">
         Delete account
     </a>
 </div>
+
 
 }

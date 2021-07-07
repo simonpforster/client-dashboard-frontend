@@ -34,6 +34,8 @@ lazy val microservice = Project(appName, file("."))
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(scoverageSettings)
 
+scalacOptions += s"-Wconf:src=${target.value}/.*:s"
+
 PlayKeys .devSettings := Seq ("play.server.http.port" -> "9008")
 
 lazy val scoverageSettings = Seq(
