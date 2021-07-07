@@ -23,6 +23,7 @@ import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -61,7 +62,7 @@ class LoginController @Inject()(
               + ("businessType" -> s"${client.businessType}")
             )
             client.arn match {
-              case Some(arn) => call.withSession(call.session + ("arn" -> arn))
+              case Some(arn) => call.withSession(call.session + ("clientArn" -> arn))
               case None => call
             }
 
