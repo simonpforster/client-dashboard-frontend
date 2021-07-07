@@ -50,11 +50,6 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
     }
   }
 
-  def clientName: Action[AnyContent] = Action { implicit request =>
-    Redirect(routes.DashboardController.dashboardMain())
-      .withSession(request.session + ("name" -> "John Doe") + ("crn" -> "asd39402"))
-  }
-
   def arnSubmit: Action[AnyContent] = Action.async { implicit request =>
 
     if(request.session.get("crn").isDefined){
