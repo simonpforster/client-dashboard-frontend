@@ -33,6 +33,7 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
                                     implicit val ec: ExecutionContext)
   extends FrontendController(mcc) {
 
+
   def dashboardMain: Action[AnyContent] = Action async { implicit request =>
     if(request.session.get("crn").isDefined) {
       val clientOne = Client(request.session.get("crn").getOrElse(""),
@@ -47,7 +48,6 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
     }else{
       Future.successful(Redirect(routes.HomePageController.homepage()))
     }
-
   }
 
   def clientName: Action[AnyContent] = Action { implicit request =>
@@ -56,6 +56,7 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
   }
 
   def arnSubmit: Action[AnyContent] = Action.async { implicit request =>
+
     if(request.session.get("crn").isDefined){
       val clientOne = Client(request.session.get("crn").getOrElse(""),
         request.session.get("name").getOrElse(""),
