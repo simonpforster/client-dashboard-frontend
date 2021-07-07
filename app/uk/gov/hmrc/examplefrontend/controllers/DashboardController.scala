@@ -41,7 +41,7 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       request.session.get("propertyNumber").getOrElse("1").toInt,
       request.session.get("postcode").getOrElse(""),
       request.session.get("businessType").getOrElse(""),
-      request.session.get("arn"))
+      request.session.get("clientArn"))
     Future.successful(Ok(dashboardPage(clientOne, AgentForm.form.fill(Agent("")))))
   }
 
@@ -58,7 +58,7 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       request.session.get("propertyNumber").getOrElse("1").toInt,
       request.session.get("postcode").getOrElse(""),
       request.session.get("businessType").getOrElse(""),
-      request.session.get("arn"))
+      request.session.get("clientArn"))
     val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
     val formWithErrors: Form[Agent] = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
     AgentForm.form.bindFromRequest.fold(
@@ -68,7 +68,7 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       success => {
         dataConnector.checkArn(success).flatMap {
           case true => dataConnector.addArn(clientOne, success) map {
-            case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm)).withSession(request.session + ("arn" -> success.arn))
+            case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm)).withSession(request.session + ("clientArn" -> success.arn))
             case false => BadRequest(dashboardPage(client = clientOne, agentForm = formWithErrors)).withSession(request.session)
           }
           case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors.withError("arn", "no"))))
@@ -85,12 +85,12 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       request.session.get("propertyNumber").getOrElse("1").toInt,
       request.session.get("postcode").getOrElse(""),
       request.session.get("businessType").getOrElse(""),
-      request.session.get("arn"))
+      request.session.get("clientArn"))
     val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
     clientOne.arn match {
       case Some(arn) =>
         dataConnector.removeArn(clientOne, Agent(arn)).map {
-          case true => Ok(dashboardPage(client = clientOne.copy(arn = None), agentForm = emptyForm)).withSession(request.session - "arn")
+          case true => Ok(dashboardPage(client = clientOne.copy(arn = None), agentForm = emptyForm)).withSession(request.session - "clientArn")
           case false => BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm)).withSession(request.session)
         }
       case None => Future(NotFound(dashboardPage(client = clientOne, agentForm = emptyForm)).withSession(request.session))
