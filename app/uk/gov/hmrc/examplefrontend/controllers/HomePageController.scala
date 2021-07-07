@@ -27,7 +27,11 @@ class HomePageController @Inject()(mcc: MessagesControllerComponents,
   extends FrontendController(mcc) {
 
   def homepage: Action[AnyContent] = Action { implicit request =>
-    Ok(homePage())
+    if(request.session.get("crn").isDefined){
+      Redirect(routes.DashboardController.dashboardMain())
+    }else{
+      Ok(homePage())
+    }
   }
 
 }

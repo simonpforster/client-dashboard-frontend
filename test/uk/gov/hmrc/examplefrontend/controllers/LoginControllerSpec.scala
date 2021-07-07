@@ -40,6 +40,11 @@ class LoginControllerSpec extends AbstractTest {
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = "/example-frontend/login")
+
+  val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = "/example-frontend/login").withSession("crn" -> "CRN3A1766D5")
+
   val connector: DataConnector = mock(classOf[DataConnector])
   val controller: LoginController = new LoginController(
     mcc = mcc,
@@ -57,6 +62,7 @@ class LoginControllerSpec extends AbstractTest {
     postcode = "testPostcode",
     businessType = "testBusinessType",
     arn = Some("testArn"))
+
   val testClientJs: JsValue = Json.parse(
     """{
       |  "crn": "testCrn",
@@ -69,30 +75,43 @@ class LoginControllerSpec extends AbstractTest {
       |}""".stripMargin)
 
   "login() method GET" should {
+    "return 303" in {
+      val result: Future[Result] = controller.login(fakeRequestWithSession)
+
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
     "return 200" in {
       val result: Future[Result] = controller.login(fakeRequest)
+
       status(result) shouldBe Status.OK
+    }
+
+    "return HTML" in {
+      val result: Future[Result] = controller.login(fakeRequest)
+
+      contentType(result) shouldBe Some("text/html")
+      charset(result) shouldBe Some("utf-8")
     }
   }
 
   "logOut() method GET" should {
-    "return 303" in {
-      val result: Future[Result] = controller.logOut(fakeRequest)
-      status(result) shouldBe 200
+    "return Ok" in {
+      val result: Future[Result] = controller.logOut(fakeRequestWithSession)
+
+      status(result) shouldBe Status.OK
       val doc: Document = Jsoup.parse(contentAsString(result))
       Option(doc.getElementById("Logout-Success")).isDefined shouldBe true
     }
-  }
 
-  "return HTML" in {
-    val result: Future[Result] = controller.login(fakeRequest)
-    contentType(result) shouldBe Some("text/html")
-    charset(result) shouldBe Some("utf-8")
-  }
+    "return SEE_OTHER" in {
+      val result: Future[Result] = controller.logOut(fakeRequest)
 
+      status(result) shouldBe Status.SEE_OTHER
+    }
+  }
 
   "loginSubmit() method POST" should {
-
     "return BadRequest when there are errors on the input fields" in {
       val fakeRequestWithFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "", "password" -> "")
       lazy val result: Future[Result] = controller.loginSubmit(fakeRequestWithFormErrors)
@@ -104,9 +123,7 @@ class LoginControllerSpec extends AbstractTest {
 
     "redirect to the dashboard page with the corresponding session" in {
       when(connector.login(any())).thenReturn(Future.successful(Some(testClient)))
-
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
-
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe 303
@@ -115,20 +132,15 @@ class LoginControllerSpec extends AbstractTest {
 
     "return Unauthorized" in {
       when(connector.login(any())) thenReturn Future.successful(None)
-
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
-
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe UNAUTHORIZED
     }
 
-
     "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
       when(connector.login(any())).thenReturn(Future.failed(new Exception))
-
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
-
       lazy val result = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
