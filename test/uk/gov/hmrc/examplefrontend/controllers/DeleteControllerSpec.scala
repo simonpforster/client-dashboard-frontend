@@ -48,6 +48,7 @@ class DeleteControllerSpec extends AbstractTest {
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = "/example-frontend/delete-select")
+
   private val controller = new DeleteClientController(
     mcc = Helpers.stubMessagesControllerComponents(),
     dataConnector = dataConnector,
@@ -57,14 +58,19 @@ class DeleteControllerSpec extends AbstractTest {
 
   "areYouSure()" should {
     "return 200" in {
-      val result: Future[Result] = controller.areYouSure().apply(fakeRequest)
+      val result: Future[Result] = controller.areYouSure().apply(fakeRequest.withSession("crn" -> "CRNC5D7C333"))
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in {
-      val result: Future[Result] = controller.areYouSure().apply(fakeRequest)
+      val result: Future[Result] = controller.areYouSure().apply(fakeRequest.withSession("crn" -> "CRNC5D7C333"))
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
+    }
+
+    "return 303" in {
+      val result: Future[Result] = controller.areYouSure().apply(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
     }
   }
 
@@ -72,29 +78,35 @@ class DeleteControllerSpec extends AbstractTest {
     "delete" in {
       when(dataConnector.deleteClient(any())) thenReturn Future(true)
       val result: Future[Result] = controller.deleteClient().apply(fakeRequest.withSession("crn" -> "testCrn"))
-      status(result) shouldBe 303
+      status(result) shouldBe Status.SEE_OTHER
     }
 
-    "delete without crn (unsuccessful)" in {
+    "delete without crn (unsuccessful) redirects" in {
       val result: Future[Result] = controller.deleteClient().apply(fakeRequest.withSession())
-      status(result) shouldBe 400
+      status(result) shouldBe Status.SEE_OTHER
     }
 
     "delete (unsuccessfully)" in {
       when(dataConnector.deleteClient(any())) thenReturn Future(false)
       val result: Future[Result] = controller.deleteClient().apply(fakeRequest.withSession("crn" -> "testCrn"))
-      status(result) shouldBe 502
+      status(result) shouldBe Status.BAD_GATEWAY
     }
+
   }
 
   "deleteClientSuccessful()" should {
     "return 200" in {
-      val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest)
+      val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest.withSession("crn" -> "CRNC5D7C333"))
       status(result) shouldBe Status.OK
     }
 
-    "return HTML" in {
+    "return 303" in {
       val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "return HTML" in {
+      val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest.withSession("crn" -> "CRNC5D7C333"))
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
     }

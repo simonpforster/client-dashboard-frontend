@@ -37,12 +37,21 @@ class LoginController @Inject()(
   extends FrontendController(mcc) with I18nSupport {
 
   def login: Action[AnyContent] = Action { implicit request =>
-    val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
-    Ok(loginPage(form))
+    if(request.session.get("crn").isDefined){
+      Redirect(routes.DashboardController.dashboardMain())
+    }else{
+      val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
+      Ok(loginPage(form))
+    }
   }
 
-  def logOut: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(logoutSuccessPage()).withNewSession)
+  def logOut: Action[AnyContent] = Action { implicit request =>
+    if(request.session.get("crn").isDefined){
+      Ok(logoutSuccessPage()).withNewSession
+    }else {
+      Redirect(routes.HomePageController.homepage())
+    }
+
   }
 
   def loginSubmit: Action[AnyContent] = Action.async { implicit request =>

@@ -69,7 +69,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
     wspostagent("/readAgent", Json.toJson(agent).as[JsObject]).map {
       _.status match {
         case 200 => true
-
         case _ => false
       }
     }

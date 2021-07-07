@@ -28,12 +28,25 @@ class HomePageControllerSpec extends AbstractTest {
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = "/example-frontend")
+
+  private val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = "/example-frontend")
+    .withSession("crn" -> "test")
+
   private val controller = app.injector.instanceOf[HomePageController]
 
-  "GET /example-frontend" should {
-    "return 200" in {
+  "homepage() method" should {
+    "return Ok" in {
       val result: Future[Result] = controller.homepage(fakeRequest)
+
       status(result) shouldBe Status.OK
+    }
+
+    "return SEE_OTHER" in {
+      val result: Future[Result] = controller.homepage(fakeRequestWithSession)
+
+      status(result) shouldBe Status.SEE_OTHER
     }
 
     "return HTML" in {
