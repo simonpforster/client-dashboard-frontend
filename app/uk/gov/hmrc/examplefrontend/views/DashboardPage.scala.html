@@ -4,8 +4,7 @@
 @this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
 @(client: Client, agentForm: Form[Agent])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some("Dashboard")) {
-
+@layout(pageTitle = Some("Dashboard"), Some(client)) {
 <h1 class="govuk-heading-xl">Dashboard</h1>
 <h2 class="govuk-heading-s"> Username: @client.name </h2>
 <h3 class="govuk-heading-s"> Your Client Reference Number (CRN): @client.crn </h3>

@@ -4,7 +4,7 @@
 @this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
 @(client:Client)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some("Are you sure?")) {
+@layout(pageTitle = Some("Are you sure?"), Some(client)) {
 
     <h1 class="govuk-panel__title">
         Are you sure you wish to delete your account?
