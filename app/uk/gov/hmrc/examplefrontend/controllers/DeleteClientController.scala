@@ -33,27 +33,36 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
   extends FrontendController(mcc) with I18nSupport {
 
   def deleteClient(): Action[AnyContent] = Action async { implicit request =>
-    val crnInput: Option[String] = request.session.get("crn")
-    crnInput match {
-      case Some(value) =>
-        val crn = CRN(value)
-        val response: Future[Boolean] = dataConnector.deleteClient(crn)
-        response.map {
-          case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
-          case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
-        }
-      case None => Future.successful(BadRequest)
-    }
+      val crnInput: Option[String] = request.session.get("crn")
+      crnInput match {
+        case Some(value) =>
+          val crn = CRN(value)
+          val response: Future[Boolean] = dataConnector.deleteClient(crn)
+          response.map {
+            case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
+            case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
+          }
+        case None => Future.successful(Redirect(routes.HomePageController.homepage()))
+      }
   }
 
   def areYouSure(): Action[AnyContent] = Action { implicit request =>
-    val clientOne: Client = Client(
-      request.session.get("crn").getOrElse(""),
-      request.session.get("name").getOrElse(""), "", "", 0, "", "")
-    Ok(deleteAreYouSure(clientOne))
+    if(request.session.get("crn").isDefined) {
+      val clientOne: Client = Client(
+        request.session.get("crn").getOrElse(""),
+        request.session.get("name").getOrElse(""), "", "", 0, "", "")
+      Ok(deleteAreYouSure(clientOne))
+    }else{
+      Redirect(routes.HomePageController.homepage())
+    }
+
   }
 
   def deleteClientSuccessful(): Action[AnyContent] = Action { implicit request =>
-    Ok(deleteSuccess())
+    if(request.session.get("crn").isDefined) {
+      Ok(deleteSuccess()).withNewSession
+    }else{
+      Redirect(routes.HomePageController.homepage())
+    }
   }
 }
