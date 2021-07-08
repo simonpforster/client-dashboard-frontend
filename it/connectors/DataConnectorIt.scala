@@ -21,6 +21,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
@@ -73,6 +74,28 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 
         result shouldBe true
       }
+
+      "not found client to delete" in {
+        stubDelete(
+          url = "/delete-client",
+          status = NOT_FOUND,
+          responseBody = "")
+
+        val result: Boolean = await(connector.deleteClient(crnTest))
+
+        result shouldBe false
+      }
+
+      "bad request no client deleted" in {
+        stubDelete(
+          url = "/delete-client",
+          status = BAD_REQUEST,
+          responseBody = "")
+
+        val result: Boolean = await(connector.deleteClient(crnTest))
+
+        result shouldBe false
+      }
     }
 
     "login" should {
@@ -85,6 +108,17 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         val result: Option[Client] = await(connector.login(testUser))
 
         result shouldBe Some(testClient)
+      }
+
+      "receive a bad client" in {
+        stubPost(
+          url = "/login",
+          status = 200,
+          responseBody = "{}")
+
+        val result: Option[Client] = await(connector.login(testUser))
+
+        result shouldBe None
       }
 
       "fail because of unauthorized" in {
