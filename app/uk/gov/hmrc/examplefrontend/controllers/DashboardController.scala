@@ -20,6 +20,7 @@ import play.api.data.Form
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.common.SessionKeys
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
@@ -36,15 +37,15 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
   extends FrontendController(mcc) {
 
   def dashboardMain: Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get("crn").isDefined) {
-      val clientOne = Client(request.session.get("crn").getOrElse(""),
-        request.session.get("name").getOrElse(""),
-        request.session.get("businessName").getOrElse(""),
-        request.session.get("contactNumber").getOrElse(""),
-        request.session.get("propertyNumber").getOrElse("1").toInt,
-        request.session.get("postcode").getOrElse(""),
-        request.session.get("businessType").getOrElse(""),
-        request.session.get("clientArn"))
+    if (request.session.get(SessionKeys.crn).isDefined) {
+      val clientOne = Client(request.session.get(SessionKeys.crn).getOrElse(""),
+        request.session.get(SessionKeys.name).getOrElse(""),
+        request.session.get(SessionKeys.businessName).getOrElse(""),
+        request.session.get(SessionKeys.contactNumber).getOrElse(""),
+        request.session.get(SessionKeys.propertyNumber).getOrElse("1").toInt,
+        request.session.get(SessionKeys.postcode).getOrElse(""),
+        request.session.get(SessionKeys.businessType).getOrElse(""),
+        request.session.get(SessionKeys.arn))
       Future.successful(Ok(dashboardPage(clientOne, AgentForm.form.fill(Agent("")))))
     } else {
       Future.successful(Redirect(routes.HomePageController.homepage()))
@@ -52,15 +53,15 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
   }
 
   def arnSubmit: Action[AnyContent] = Action.async { implicit request =>
-    if (request.session.get("crn").isDefined) {
-      val clientOne = Client(request.session.get("crn").getOrElse(""),
-        request.session.get("name").getOrElse(""),
-        request.session.get("businessName").getOrElse(""),
-        request.session.get("contactNumber").getOrElse(""),
-        request.session.get("propertyNumber").getOrElse("1").toInt,
-        request.session.get("postcode").getOrElse(""),
-        request.session.get("businessType").getOrElse(""),
-        request.session.get("clientArn"))
+    if (request.session.get(SessionKeys.crn).isDefined) {
+      val clientOne = Client(request.session.get(SessionKeys.crn).getOrElse(""),
+        request.session.get(SessionKeys.name).getOrElse(""),
+        request.session.get(SessionKeys.businessName).getOrElse(""),
+        request.session.get(SessionKeys.contactNumber).getOrElse(""),
+        request.session.get(SessionKeys.propertyNumber).getOrElse("1").toInt,
+        request.session.get(SessionKeys.postcode).getOrElse(""),
+        request.session.get(SessionKeys.businessType).getOrElse(""),
+        request.session.get(SessionKeys.arn))
       val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
       val formWithErrors: Form[Agent] = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
       AgentForm.form.bindFromRequest.fold(
@@ -97,21 +98,21 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
   }
 
   def arnRemove: Action[AnyContent] = Action.async { implicit request =>
-    if (request.session.get("crn").isDefined) {
-      val clientOne = Client(request.session.get("crn").getOrElse(""),
-        request.session.get("name").getOrElse(""),
-        request.session.get("businessName").getOrElse(""),
-        request.session.get("contactNumber").getOrElse(""),
-        request.session.get("propertyNumber").getOrElse("1").toInt,
-        request.session.get("postcode").getOrElse(""),
-        request.session.get("businessType").getOrElse(""),
-        request.session.get("clientArn"))
+    if (request.session.get(SessionKeys.crn).isDefined) {
+      val clientOne = Client(request.session.get(SessionKeys.crn).getOrElse(""),
+        request.session.get(SessionKeys.name).getOrElse(""),
+        request.session.get(SessionKeys.businessName).getOrElse(""),
+        request.session.get(SessionKeys.contactNumber).getOrElse(""),
+        request.session.get(SessionKeys.propertyNumber).getOrElse("1").toInt,
+        request.session.get(SessionKeys.postcode).getOrElse(""),
+        request.session.get(SessionKeys.businessType).getOrElse(""),
+        request.session.get(SessionKeys.arn))
       val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
       clientOne.arn match {
         case Some(arn) =>
           dataConnector.removeArn(clientOne, Agent(arn)).map {
             case true => Ok(dashboardPage(client = clientOne.copy(arn = None), agentForm = emptyForm))
-              .withSession(request.session - "clientArn")
+              .withSession(request.session - SessionKeys.arn)
             case false => BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm))
               .withSession(request.session)
           }.recover {

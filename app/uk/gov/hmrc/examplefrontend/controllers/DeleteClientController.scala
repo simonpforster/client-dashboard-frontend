@@ -18,6 +18,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.common.SessionKeys
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{CRN, Client}
@@ -36,8 +37,7 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
   extends FrontendController(mcc) with I18nSupport {
 
   def deleteClient(): Action[AnyContent] = Action async { implicit request =>
-      val crnInput: Option[String] = request.session.get("crn")
-      crnInput match {
+      request.session.get(SessionKeys.crn) match {
         case Some(value) =>
           val crn = CRN(value)
           val response: Future[Boolean] = dataConnector.deleteClient(crn)
@@ -55,10 +55,15 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
   }
 
   def areYouSure(): Action[AnyContent] = Action { implicit request =>
-    if(request.session.get("crn").isDefined) {
-      val clientOne: Client = Client(
-        request.session.get("crn").getOrElse(""),
-        request.session.get("name").getOrElse(""), "", "", 0, "", "")
+    if(request.session.get(SessionKeys.crn).isDefined) {
+      val clientOne = Client(request.session.get(SessionKeys.crn).getOrElse(""),
+        request.session.get(SessionKeys.name).getOrElse(""),
+        request.session.get(SessionKeys.businessName).getOrElse(""),
+        request.session.get(SessionKeys.contactNumber).getOrElse(""),
+        request.session.get(SessionKeys.propertyNumber).getOrElse("1").toInt,
+        request.session.get(SessionKeys.postcode).getOrElse(""),
+        request.session.get(SessionKeys.businessType).getOrElse(""),
+        request.session.get(SessionKeys.arn))
       Ok(deleteAreYouSure(clientOne))
     }else{
       Redirect(routes.HomePageController.homepage())
@@ -67,7 +72,7 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
   }
 
   def deleteClientSuccessful(): Action[AnyContent] = Action { implicit request =>
-    if(request.session.get("crn").isDefined) {
+    if(request.session.get(SessionKeys.crn).isDefined) {
       Ok(deleteSuccess()).withNewSession
     }else{
       Redirect(routes.HomePageController.homepage())

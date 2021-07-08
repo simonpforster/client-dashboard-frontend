@@ -25,6 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.examplefrontend.common.SessionKeys
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
@@ -45,7 +46,7 @@ class LoginControllerSpec extends AbstractTest {
 
   val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/example-frontend/login").withSession("crn" -> "CRN3A1766D5")
+    path = "/example-frontend/login").withSession(SessionKeys.crn -> "CRN3A1766D5")
 
   val connector: DataConnector = mock(classOf[DataConnector])
   val controller: LoginController = new LoginController(
