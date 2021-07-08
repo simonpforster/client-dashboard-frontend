@@ -18,10 +18,12 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{CRN, Client}
 import uk.gov.hmrc.examplefrontend.views.html.{DeleteAreYouSure, DeleteSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,6 +31,7 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
                                        dataConnector: DataConnector,
                                        deleteSuccess: DeleteSuccess,
                                        deleteAreYouSure: DeleteAreYouSure,
+                                       error:ErrorHandler,
                                        implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
@@ -41,6 +44,11 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
           response.map {
             case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
             case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
+          }.recover {
+            case _ => InternalServerError(error.standardErrorTemplate(
+              pageTitle = "Something went wrong",
+              heading = "Something went wrong",
+              message = "Delete account unsuccessful"))
           }
         case None => Future.successful(Redirect(routes.HomePageController.homepage()))
       }

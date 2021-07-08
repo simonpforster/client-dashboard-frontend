@@ -29,13 +29,17 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
   private val Agenthost = "http://localhost:9009"
 
-  private def wspostagent(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(Agenthost + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+  private def wspostagent(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(Agenthost + url)
+    .addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
-  private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+  private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url)
+    .addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
 
-  private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
+  private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url)
+    .addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
 
-  private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url).withBody(jsObject).delete()
+  private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url)
+    .withBody(jsObject).delete()
 
   def login(user: User): Future[Option[Client]] = {
     val userCredentials: JsObject = Json.obj(

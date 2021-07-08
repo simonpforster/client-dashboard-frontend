@@ -20,6 +20,7 @@ import play.api.data.Form
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
 
@@ -30,12 +31,12 @@ import scala.concurrent.{ExecutionContext, Future}
 class DashboardController @Inject()(mcc: MessagesControllerComponents,
                                     dashboardPage: DashboardPage,
                                     dataConnector: DataConnector,
+                                    error: ErrorHandler,
                                     implicit val ec: ExecutionContext)
   extends FrontendController(mcc) {
 
-
   def dashboardMain: Action[AnyContent] = Action async { implicit request =>
-    if(request.session.get("crn").isDefined) {
+    if (request.session.get("crn").isDefined) {
       val clientOne = Client(request.session.get("crn").getOrElse(""),
         request.session.get("name").getOrElse(""),
         request.session.get("businessName").getOrElse(""),
@@ -45,14 +46,13 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
         request.session.get("businessType").getOrElse(""),
         request.session.get("clientArn"))
       Future.successful(Ok(dashboardPage(clientOne, AgentForm.form.fill(Agent("")))))
-    }else{
+    } else {
       Future.successful(Redirect(routes.HomePageController.homepage()))
     }
   }
 
   def arnSubmit: Action[AnyContent] = Action.async { implicit request =>
-
-    if(request.session.get("crn").isDefined){
+    if (request.session.get("crn").isDefined) {
       val clientOne = Client(request.session.get("crn").getOrElse(""),
         request.session.get("name").getOrElse(""),
         request.session.get("businessName").getOrElse(""),
@@ -69,22 +69,35 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
         },
         success => {
           dataConnector.checkArn(success).flatMap {
-            case true => dataConnector.addArn(clientOne, success) map {
-              case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm)).withSession(request.session + ("clientArn" -> success.arn))
-              case false => BadRequest(dashboardPage(client = clientOne, agentForm = formWithErrors)).withSession(request.session)
+            case true => dataConnector.addArn(clientOne, success).map {
+              case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm))
+                .withSession(request.session + ("clientArn" -> success.arn))
+              case false => BadRequest(dashboardPage(client = clientOne, agentForm = formWithErrors))
+                .withSession(request.session)
+            }.recover {
+              case _ => InternalServerError(error.standardErrorTemplate(
+                pageTitle = "Something went wrong",
+                heading = "Something went wrong",
+                message = "Come back later"))
             }
-            case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors.withError("arn", "no"))))
+            case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors
+              .withError("arn", "no"))))
+          }.recover {
+            case _ => InternalServerError(error.standardErrorTemplate(
+              pageTitle = "Something went wrong",
+              heading = "Something went wrong",
+              message = "Come back later"))
           }
         }
       )
-    }else{
+    } else {
       Future(Redirect(routes.HomePageController.homepage()))
     }
 
   }
 
   def arnRemove: Action[AnyContent] = Action.async { implicit request =>
-    if(request.session.get("crn").isDefined){
+    if (request.session.get("crn").isDefined) {
       val clientOne = Client(request.session.get("crn").getOrElse(""),
         request.session.get("name").getOrElse(""),
         request.session.get("businessName").getOrElse(""),
@@ -97,14 +110,21 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
       clientOne.arn match {
         case Some(arn) =>
           dataConnector.removeArn(clientOne, Agent(arn)).map {
-            case true => Ok(dashboardPage(client = clientOne.copy(arn = None), agentForm = emptyForm)).withSession(request.session - "clientArn")
-            case false => BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm)).withSession(request.session)
+            case true => Ok(dashboardPage(client = clientOne.copy(arn = None), agentForm = emptyForm))
+              .withSession(request.session - "clientArn")
+            case false => BadRequest(dashboardPage(client = clientOne, agentForm = emptyForm))
+              .withSession(request.session)
+          }.recover {
+            case _ => InternalServerError(error.standardErrorTemplate(
+              pageTitle = "Something went wrong",
+              heading = "Something went wrong",
+              message = "Delete arn unsuccessful"))
           }
-        case None => Future(NotFound(dashboardPage(client = clientOne, agentForm = emptyForm)).withSession(request.session))
+        case None => Future(NotFound(dashboardPage(client = clientOne, agentForm = emptyForm))
+          .withSession(request.session))
       }
-    }else{
+    } else {
       Future(Redirect(routes.HomePageController.homepage()))
     }
-
   }
 }
