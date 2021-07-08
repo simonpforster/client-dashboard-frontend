@@ -112,8 +112,17 @@ class LoginControllerSpec extends AbstractTest {
   }
 
   "loginSubmit() method POST" should {
+    "return a failed page" in{
+      when(connector.login(any())).thenReturn(Future.failed(new RuntimeException))
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
+        .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+      val doc: Document = Jsoup.parse(contentAsString(result))
+      doc.title() shouldBe "Something went wrong"
+    }
+
     "return BadRequest when there are errors on the input fields" in {
-      val fakeRequestWithFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "", "password" -> "")
+      val fakeRequestWithFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
+        .withFormUrlEncodedBody("crn" -> "", "password" -> "")
       lazy val result: Future[Result] = controller.loginSubmit(fakeRequestWithFormErrors)
 
       Jsoup.parse(contentAsString(result)).getElementById("crn").`val` shouldBe ""
@@ -123,7 +132,8 @@ class LoginControllerSpec extends AbstractTest {
 
     "redirect to the dashboard page with the corresponding session" in {
       when(connector.login(any())).thenReturn(Future.successful(Some(testClient)))
-      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
+        .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe 303
@@ -132,7 +142,8 @@ class LoginControllerSpec extends AbstractTest {
 
     "return Unauthorized" in {
       when(connector.login(any())) thenReturn Future.successful(None)
-      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
+        .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe UNAUTHORIZED
@@ -140,7 +151,8 @@ class LoginControllerSpec extends AbstractTest {
 
     "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
       when(connector.login(any())).thenReturn(Future.failed(new Exception))
-      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest.withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
+      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
+        .withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
       lazy val result = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe INTERNAL_SERVER_ERROR
