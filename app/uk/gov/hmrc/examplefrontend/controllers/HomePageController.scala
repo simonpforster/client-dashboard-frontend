@@ -34,6 +34,5 @@ class HomePageController @Inject()(mcc: MessagesControllerComponents,
       Ok(homePage())
     }
   }
-
 }
 
