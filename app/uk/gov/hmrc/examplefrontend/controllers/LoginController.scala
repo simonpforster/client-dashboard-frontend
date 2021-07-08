@@ -19,6 +19,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.common.SessionKeys
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
@@ -39,7 +40,7 @@ class LoginController @Inject()(
   extends FrontendController(mcc) with I18nSupport {
 
   def login: Action[AnyContent] = Action { implicit request =>
-    if(request.session.get("crn").isDefined){
+    if(request.session.get(SessionKeys.crn).isDefined){
       Redirect(routes.DashboardController.dashboardMain())
     }else{
       val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
@@ -48,7 +49,7 @@ class LoginController @Inject()(
   }
 
   def logOut: Action[AnyContent] = Action { implicit request =>
-    if(request.session.get("crn").isDefined){
+    if(request.session.get(SessionKeys.crn).isDefined){
       Ok(logoutSuccessPage()).withNewSession
     }else {
       Redirect(routes.HomePageController.homepage())
@@ -63,16 +64,16 @@ class LoginController @Inject()(
         dataConnector.login(success).map {
           case Some(client) =>
             val call = Redirect("/example-frontend/dashboard").withSession(request.session
-              + ("crn" -> s"${client.crn}")
-              + ("name" -> s"${client.name}")
-              + ("businessName" -> s"${client.businessName}")
-              + ("contactNumber" -> s"${client.contactNumber}")
-              + ("propertyNumber" -> s"${client.propertyNumber}")
-              + ("postcode" -> s"${client.postcode}")
-              + ("businessType" -> s"${client.businessType}")
+              + (SessionKeys.crn -> client.crn)
+              + (SessionKeys.name -> client.name)
+              + (SessionKeys.businessName -> client.businessName)
+              + (SessionKeys.contactNumber -> client.contactNumber)
+              + (SessionKeys.propertyNumber -> client.propertyNumber.toString)
+              + (SessionKeys.postcode -> client.postcode)
+              + (SessionKeys.businessType -> client.businessType)
             )
             client.arn match {
-              case Some(arn) => call.withSession(call.session + ("clientArn" -> arn))
+              case Some(arn) => call.withSession(call.session + (SessionKeys.arn -> arn))
               case None => call
             }
 

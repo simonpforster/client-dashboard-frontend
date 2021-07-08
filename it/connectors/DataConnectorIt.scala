@@ -215,4 +215,17 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     }
   }
 
+  "error handler" can {
+    "fail because of teapot" in {
+      stubPatch(
+        url = "/remove-agent",
+        status = 418,
+        responseBody = "")
+
+      val result: Boolean = await(connector.removeArn(testClient, Agent("testArn")))
+
+      result shouldBe false
+    }
+  }
+
 }
