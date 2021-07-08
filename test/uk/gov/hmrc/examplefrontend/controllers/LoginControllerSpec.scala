@@ -25,6 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
@@ -36,6 +37,7 @@ class LoginControllerSpec extends AbstractTest {
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
+  implicit lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
 
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
@@ -51,6 +53,7 @@ class LoginControllerSpec extends AbstractTest {
     loginPage = loginPage,
     dataConnector = connector,
     logoutSuccessPage = logoutSuccess,
+    error = error,
     ec = executionContext)
 
   val testClient: Client = Client(
@@ -116,6 +119,7 @@ class LoginControllerSpec extends AbstractTest {
       when(connector.login(any())).thenReturn(Future.failed(new RuntimeException))
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
         .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+      val result = controller.loginSubmit(fakeRequestSubmit)
       val doc: Document = Jsoup.parse(contentAsString(result))
       doc.title() shouldBe "Something went wrong"
     }
@@ -147,15 +151,6 @@ class LoginControllerSpec extends AbstractTest {
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe UNAUTHORIZED
-    }
-
-    "return INTERNAL_SERVER_ERROR when userCredentials not correct" in {
-      when(connector.login(any())).thenReturn(Future.failed(new Exception))
-      val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
-        .withFormUrlEncodedBody("crn" -> "test2", "password" -> "5678")
-      lazy val result = controller.loginSubmit(fakeRequestSubmit)
-
-      status(result) shouldBe INTERNAL_SERVER_ERROR
     }
   }
 }

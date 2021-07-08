@@ -19,6 +19,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
@@ -33,6 +34,7 @@ class LoginController @Inject()(
                                  loginPage: LoginPage,
                                  dataConnector: DataConnector,
                                  logoutSuccessPage: LogoutSuccess,
+                                 error: ErrorHandler,
                                  implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
@@ -51,7 +53,6 @@ class LoginController @Inject()(
     }else {
       Redirect(routes.HomePageController.homepage())
     }
-
   }
 
   def loginSubmit: Action[AnyContent] = Action.async { implicit request =>
@@ -76,8 +77,13 @@ class LoginController @Inject()(
             }
 
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
+        }.recover {
+          case _ => InternalServerError(error.standardErrorTemplate(
+            pageTitle = "Something went wrong",
+            heading = "Something went wrong",
+            message = "Come back later"))
         }
-      } recover { case _ => InternalServerError }
+      }
     )
   }
 }
