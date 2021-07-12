@@ -1,0 +1,87 @@
+@import uk.gov.hmrc.examplefrontend.models.Client
+@import uk.gov.hmrc.examplefrontend.models.Agent
+
+@this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
+@(client: Client)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("Modify Account"), Some(client)) {
+<a class="govuk-link" data-module="govuk-button"
+   href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.dashboardMain">
+    Back
+</a>
+
+<h1 class="govuk-heading-xl">Modify Account</h1>
+
+<div class="govuk-summary-list__row">
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Name
+        </dt>
+        <dd class="govuk-summary-list__value" id="name-value">
+            @client.name
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="#">
+                Change<span class="govuk-visually-hidden"> name</span>
+            </a>
+        </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Business Name:
+        </dt>
+        <dd class="govuk-summary-list__value" id="business-name-value">
+            @client.businessName
+        </dd>
+        <dd class="govuk-summary-list__actions">
+
+        </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Contact Number:
+        </dt>
+        <dd class="govuk-summary-list__value" id="contact-value">
+            @client.contactNumber
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="#">
+                Change<span class="govuk-visually-hidden">contact</span>
+            </a>
+        </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Property
+        </dt>
+        <dd class="govuk-summary-list__value" id="property-value">
+            <p class="govuk-body">@client.propertyNumber , @client.postcode</p>
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="#">
+                Change<span class="govuk-visually-hidden">property</span>
+            </a>
+        </dd>
+    </div>
+
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Business Type
+        </dt>
+        <dd class="govuk-summary-list__value" id="business-type-value">
+            <p class="govuk-body">@client.businessType</p>
+        </dd>
+        <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="#">
+                Change<span class="govuk-visually-hidden">business type</span>
+            </a>
+        </dd>
+    </div>
+</div>
+
+
+}
