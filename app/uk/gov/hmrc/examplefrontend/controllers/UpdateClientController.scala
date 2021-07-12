@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
+import play.api.data.Form
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.MessagesControllerComponents
 import uk.gov.hmrc.examplefrontend.common.SessionKeys
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
-import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
-import uk.gov.hmrc.examplefrontend.views.html.UpdateClientPage
+import uk.gov.hmrc.examplefrontend.models.{Client, UserProperty, UserPropertyForm}
+import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -31,6 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class UpdateClientController @Inject()(
                                         mcc: MessagesControllerComponents,
                                         updateClientPage: UpdateClientPage,
+                                        updateClientPropertyPage:UpdateClientPropertyPage,
                                         error: ErrorHandler,
                                         implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
@@ -52,4 +53,31 @@ class UpdateClientController @Inject()(
       Future.successful(Redirect(routes.HomePageController.homepage()))
     }
   }
+
+  def OpenUpdateClientProperty = Action async  {implicit request =>
+    if (request.session.get(SessionKeys.crn).isDefined) {
+
+      val form: Form[UserProperty] = request.session.get(SessionKeys.property).fold(UserPropertyForm.submitForm.fill(UserProperty("", ""))) {
+        property => UserPropertyForm.submitForm.fill(UserProperty.decode(property))
+      }
+
+      val crn: String = request.session.get(SessionKeys.crn).getOrElse("")
+      val name = request.session.get(SessionKeys.name).getOrElse("")
+      val businessName = request.session.get(SessionKeys.businessName).getOrElse("")
+      val contactNumber: String = request.session.get(SessionKeys.contactNumber).getOrElse("")
+      val property: UserProperty = UserProperty.decode(request.session.get(SessionKeys.property).getOrElse(""))
+      val businessType: String = request.session.get(SessionKeys.businessType).getOrElse("")
+      val arn: Option[String] = request.session.get(SessionKeys.arn)
+
+      val clientOne = Client(crn, name, businessName, contactNumber, property.propertyNumber,property.postcode, businessType, arn)
+      Future.successful(Ok(updateClientPropertyPage(form,clientOne)))
+    }else {
+      Future.successful(Redirect(routes.HomePageController.homepage()))
+    }
+  }
+
+  def updateProperty = Action async {implicit request =>
+    Future.successful(Ok)
+  }
+
 }

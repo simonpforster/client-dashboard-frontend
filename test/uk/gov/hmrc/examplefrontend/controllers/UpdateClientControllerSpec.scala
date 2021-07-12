@@ -25,7 +25,7 @@ import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
-import uk.gov.hmrc.examplefrontend.views.html.{DashboardPage, UpdateClientPage}
+import uk.gov.hmrc.examplefrontend.views.html.{DashboardPage, UpdateClientPage, UpdateClientPropertyPage}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,12 +37,14 @@ class UpdateClientControllerSpec extends AbstractTest {
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
   val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  lazy val mockupdateClientPropertyPage:UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
 
   object testUpdateClientController extends UpdateClientController(
     mcc = mcc,
     updateClientPage = updateClientPage,
     error = error,
-    ec = executionContext
+    ec = executionContext,
+    updateClientPropertyPage = mockupdateClientPropertyPage
   )
 
   private val client: Client = Client(
@@ -54,6 +56,11 @@ class UpdateClientControllerSpec extends AbstractTest {
     postcode = "TestAddress",
     businessType = "Private Limited",
     arn = Option("Arn"))
+
+  val fakeRequestProperty: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = UrlKeys.modifyClientProperty
+  )
 
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
@@ -84,5 +91,16 @@ class UpdateClientControllerSpec extends AbstractTest {
       val result: Future[Result] = testUpdateClientController.OpenUpdateClientPage(fakeRequestWithoutSession)
       status(result) shouldBe Status.SEE_OTHER
     }
+  }
+  "return status OK" in {
+    val result: Future[Result] = testUpdateClientController.OpenUpdateClientProperty(fakeRequestProperty)
+
+    status(result) shouldBe Status.OK
+    contentType(result) shouldBe Some("text/html")
+    contentAsString(result) should include("Update Property")
+  }
+  "return status Redirect" in {
+    val result: Future[Result] = testUpdateClientController.OpenUpdateClientPage(fakeRequestWithoutSession)
+    status(result) shouldBe Status.SEE_OTHER
   }
 }

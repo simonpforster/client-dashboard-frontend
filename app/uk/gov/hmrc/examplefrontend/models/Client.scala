@@ -31,3 +31,27 @@ object Client {
   implicit val format: OFormat[Client] = Json.format[Client]
 }
 
+case class UserProperty(propertyNumber: String, postcode: String) {
+  def encode(): String = {
+    propertyNumber + "/" + postcode
+  }
+}
+
+object UserProperty {
+  def decode(x: String): UserProperty = {
+    val (propertyNumber, postcode): (String, String) = x.split("/").toList match {
+      case propertyNumber :: postcode :: _ => (propertyNumber, postcode)
+    }
+    UserProperty(propertyNumber = propertyNumber, postcode = postcode)
+  }
+}
+
+object UserPropertyForm {
+  val submitForm: Form[UserProperty] =
+    Form(
+      mapping(
+        UserClientProperties.propertyNumber -> nonEmptyText,
+        UserClientProperties.postcode -> nonEmptyText
+      )(UserProperty.apply)(UserProperty.unapply)
+    )
+}
