@@ -23,6 +23,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.examplefrontend.common.UrlKeys
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Agent
 
@@ -48,7 +49,7 @@ class AgentConnectorit extends AnyWordSpec with Matchers with GuiceOneAppPerSuit
     "checkARN" should {
       "succesfully check arn" in {
         stubPost(
-          url = "/readAgent",
+          url = UrlKeys.readAgent,
           status = 200,
           responseBody = "{}")
         val result: Boolean = await(connector.checkArn(testAgent))
@@ -56,7 +57,7 @@ class AgentConnectorit extends AnyWordSpec with Matchers with GuiceOneAppPerSuit
       }
       "agent not found" in {
         stubPost(
-          url = "/readAgent",
+          url = UrlKeys.readAgent,
           status = NOT_FOUND,
           responseBody = "{}")
         val result: Boolean = await(connector.checkArn(testAgent))
@@ -64,7 +65,7 @@ class AgentConnectorit extends AnyWordSpec with Matchers with GuiceOneAppPerSuit
       }
       "bad request" in {
         stubPost(
-          url = "/readAgent",
+          url = UrlKeys.readAgent,
           status = BAD_REQUEST,
           responseBody = "{}")
         val result: Boolean = await(connector.checkArn(testAgent))

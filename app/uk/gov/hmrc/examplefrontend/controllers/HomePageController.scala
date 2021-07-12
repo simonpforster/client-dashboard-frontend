@@ -17,7 +17,7 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys}
 import uk.gov.hmrc.examplefrontend.views.html.HomePage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -29,15 +29,15 @@ class HomePageController @Inject()(mcc: MessagesControllerComponents,
   extends FrontendController(mcc) {
 
   def homepage: Action[AnyContent] = Action { implicit request =>
-    if(request.session.get(SessionKeys.crn).isDefined){
+    if (request.session.get(SessionKeys.crn).isDefined) {
       Redirect(routes.DashboardController.dashboardMain())
-    }else{
+    } else {
       Ok(homePage())
     }
   }
 
   def registration: Action[AnyContent] = Action {
-    Redirect("http://localhost:9007/client-registration/name-input").withNewSession
+    Redirect(UrlKeys.registrationNI).withNewSession
   }
 }
 

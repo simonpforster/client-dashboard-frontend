@@ -26,7 +26,7 @@ import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, status}
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
@@ -48,32 +48,36 @@ class DashboardControllerSpec extends AbstractTest {
     ec = executionContext
   )
 
+  val agentFormField: String = "arn"
+  val testCRN: String = "testCrn"
+  val testName: String = "testName"
+  val testARN: String = "testARN"
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/dashboard")
-    .withSession(SessionKeys.name -> "John Doe").withSession(SessionKeys.crn -> "asd3748")
+    path = UrlKeys.dashboard)
+    .withSession(SessionKeys.name -> testName).withSession(SessionKeys.crn -> testCRN)
 
   val fakeRequestWithoutSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/dashboard")
+    path = UrlKeys.dashboard)
 
   val fakeRequestArnSubmit: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/arn-submit")
+    path = UrlKeys.arnSumbit)
 
   val fakeRequestArnSubmitWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/arn-submit")
-    .withSession(SessionKeys.crn -> "testCrn")
+    path = UrlKeys.arnSumbit)
+    .withSession(SessionKeys.crn -> testCRN)
 
   val fakeRequestArnRemove: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/arn-remove")
+    path = UrlKeys.arnSumbit)
 
   val fakeRequestArnRemoveWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/arn-remove")
-    .withSession(SessionKeys.crn -> "testCrn")
+    path = UrlKeys.arnSumbit)
+    .withSession(SessionKeys.crn -> testCRN)
 
   "DashboardController dashboardMain() GET " should {
     "return status Ok" in {
@@ -96,26 +100,26 @@ class DashboardControllerSpec extends AbstractTest {
       "future is unsuccessful at checkArn" in {
         when(mockDataConnector.checkArn(any())) thenReturn Future.failed(new RuntimeException)
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] =
-          fakeRequestArnSubmitWithSession.withFormUrlEncodedBody("arn" -> "testingArn")
+          fakeRequestArnSubmitWithSession.withFormUrlEncodedBody(agentFormField -> testARN)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
         val doc = Jsoup.parse(contentAsString(result))
-        doc.title() shouldBe "Something went wrong"
+        doc.title() shouldBe ErrorMessages.pageTitle
       }
       "future is unsuccessful at addArn" in {
         when(mockDataConnector.checkArn(any())) thenReturn Future(true)
         when(mockDataConnector.addArn(any(), any())) thenReturn Future.failed(new RuntimeException)
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] =
-          fakeRequestArnSubmitWithSession.withFormUrlEncodedBody("arn" -> "testingArn")
+          fakeRequestArnSubmitWithSession.withFormUrlEncodedBody(agentFormField -> testARN)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
         val doc = Jsoup.parse(contentAsString(result))
-        doc.title() shouldBe "Something went wrong"
+        doc.title() shouldBe ErrorMessages.pageTitle
       }
     }
 
     "return Ok" when {
       "form without errors and the result returned from POST is 200 " in {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnSubmitWithSession
-          .withFormUrlEncodedBody("arn" -> "testingArn")
+          .withFormUrlEncodedBody(agentFormField -> testARN)
         when(mockDataConnector.addArn(any(), any())) thenReturn Future(true)
         when(mockDataConnector.checkArn(any())) thenReturn Future(true)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
@@ -127,19 +131,19 @@ class DashboardControllerSpec extends AbstractTest {
     "return BadRequest" when {
       "nothing submitted in the form " in {
         val fakeRequestWithFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnSubmit
-          .withFormUrlEncodedBody("arn" -> "")
+          .withFormUrlEncodedBody(agentFormField -> "")
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithFormErrors
-          .withSession(SessionKeys.crn -> "testCrn"))
+          .withSession(SessionKeys.crn -> testCRN))
 
         status(result) shouldBe BAD_REQUEST
-        Jsoup.parse(contentAsString(result)).getElementById("arn").`val` shouldBe ""
+        Jsoup.parse(contentAsString(result)).getElementById(agentFormField).`val` shouldBe ""
       }
     }
 
     "return BadRequest" when {
       "form without errors and the result returned from POST is 404" in {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnSubmitWithSession
-          .withFormUrlEncodedBody("arn" -> "testingArn")
+          .withFormUrlEncodedBody(agentFormField -> testARN)
         when(mockDataConnector.checkArn(any())) thenReturn Future(true)
         when(mockDataConnector.addArn(any(), any())) thenReturn Future(false)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
@@ -151,7 +155,7 @@ class DashboardControllerSpec extends AbstractTest {
     "return not found" when {
       "arn doesn't exist" in {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnSubmitWithSession
-          .withFormUrlEncodedBody("arn" -> "testingArn")
+          .withFormUrlEncodedBody(agentFormField -> testARN)
         when(mockDataConnector.checkArn(any())) thenReturn Future(false)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
 
@@ -162,7 +166,7 @@ class DashboardControllerSpec extends AbstractTest {
     "return Redirect" when {
       "session is empty(user is not logged in )" in {
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestArnSubmit
-          .withFormUrlEncodedBody("arn" -> "testingArn"))
+          .withFormUrlEncodedBody(agentFormField -> testARN))
 
         status(result) shouldBe Status.SEE_OTHER
       }
@@ -173,17 +177,17 @@ class DashboardControllerSpec extends AbstractTest {
     "return error page" when {
       "arnRemomve future is unsuccessful" in {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession
-          .withFormUrlEncodedBody("arn" -> "testingArn").withSession(SessionKeys.arn -> "testArn")
+          .withFormUrlEncodedBody(agentFormField -> testARN).withSession(SessionKeys.arn -> testARN)
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future.failed(new RuntimeException)
         val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
         val doc = Jsoup.parse(contentAsString(result))
-        doc.title() shouldBe "Something went wrong"
+        doc.title() shouldBe ErrorMessages.pageTitle
       }
     }
     "return Ok" when {
       "correct input" in {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession
-          .withFormUrlEncodedBody("arn" -> "testingArn").withSession(SessionKeys.arn -> "testArn")
+          .withFormUrlEncodedBody(agentFormField -> testARN).withSession(SessionKeys.arn -> testARN)
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(true)
         val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
         status(result) shouldBe OK
@@ -201,13 +205,13 @@ class DashboardControllerSpec extends AbstractTest {
     "return an error" should {
       "fail in the backend" in {
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(false)
-        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession.withFormUrlEncodedBody("arn" -> "testingArn").withSession(SessionKeys.arn -> "testingArn")
+        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession.withFormUrlEncodedBody(agentFormField -> testARN).withSession(SessionKeys.arn -> testARN)
         val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
 
         status(result) shouldBe BAD_REQUEST
       }
       "no arn in session" in {
-        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession.withFormUrlEncodedBody("arn" -> "testingArn")
+        val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession.withFormUrlEncodedBody(agentFormField -> testARN)
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(false)
         val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
 

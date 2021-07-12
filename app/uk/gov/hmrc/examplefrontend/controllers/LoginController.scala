@@ -19,7 +19,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
@@ -40,18 +40,18 @@ class LoginController @Inject()(
   extends FrontendController(mcc) with I18nSupport {
 
   def login: Action[AnyContent] = Action { implicit request =>
-    if(request.session.get(SessionKeys.crn).isDefined){
+    if (request.session.get(SessionKeys.crn).isDefined) {
       Redirect(routes.DashboardController.dashboardMain())
-    }else{
+    } else {
       val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
       Ok(loginPage(form))
     }
   }
 
   def logOut: Action[AnyContent] = Action { implicit request =>
-    if(request.session.get(SessionKeys.crn).isDefined){
+    if (request.session.get(SessionKeys.crn).isDefined) {
       Ok(logoutSuccessPage()).withNewSession
-    }else {
+    } else {
       Redirect(routes.HomePageController.homepage())
     }
   }
@@ -63,7 +63,7 @@ class LoginController @Inject()(
       }, success => {
         dataConnector.login(success).map {
           case Some(client) =>
-            val call = Redirect("/client/dashboard").withSession(request.session
+            val call = Redirect(UrlKeys.dashboard).withSession(request.session
               + (SessionKeys.crn -> client.crn)
               + (SessionKeys.name -> client.name)
               + (SessionKeys.businessName -> client.businessName)
@@ -80,9 +80,9 @@ class LoginController @Inject()(
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
         }.recover {
           case _ => InternalServerError(error.standardErrorTemplate(
-            pageTitle = "Something went wrong",
-            heading = "Something went wrong",
-            message = "Come back later"))
+            pageTitle = ErrorMessages.pageTitle,
+            heading = ErrorMessages.heading,
+            message = ErrorMessages.message))
         }
       }
     )

@@ -18,6 +18,7 @@ package uk.gov.hmrc.examplefrontend.models
 
 import play.api.data.Form
 import play.api.data.Forms.{mapping, nonEmptyText}
+import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 
 case class User(crn: String,
                 password: String)
@@ -26,8 +27,8 @@ object UserForm {
   val form: Form[User] =
     Form(
       mapping(
-        "crn" -> nonEmptyText,
-        "password" -> nonEmptyText
+        UserClientProperties.crn -> nonEmptyText,
+        UserClientProperties.password -> nonEmptyText
       )(User.apply)(User.unapply)
     )
 }

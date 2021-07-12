@@ -26,7 +26,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.Helpers.{charset, contentAsString, contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.views.html.{DashboardPage, DeleteAreYouSure, DeleteSuccess}
@@ -47,13 +47,13 @@ class DeleteControllerSpec extends AbstractTest {
   lazy val dashboardPage: DashboardPage = app.injector.instanceOf[DashboardPage]
   lazy val deleteSuccessPage: DeleteSuccess = app.injector.instanceOf[DeleteSuccess]
   lazy val areYouSure: DeleteAreYouSure = app.injector.instanceOf[DeleteAreYouSure]
-  lazy val error:ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   val dataConnector: DataConnector = mock(classOf[DataConnector])
 
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/example-frontend/delete-select")
+    path = UrlKeys.deleteSelect)
 
   private val controller = new DeleteClientController(
     mcc = Helpers.stubMessagesControllerComponents(),
@@ -63,18 +63,21 @@ class DeleteControllerSpec extends AbstractTest {
     error = error,
     ec = ec)
 
+  val crn: String = "CRNC5D7C333"
+  val contentTypeMatch: String = "text/html"
+  val charsetMatch: String = "utf-8"
   "areYouSure()" should {
     "return 200" in {
       val result: Future[Result] = controller.areYouSure()
-        .apply(fakeRequest.withSession(SessionKeys.crn -> "CRNC5D7C333"))
+        .apply(fakeRequest.withSession(SessionKeys.crn -> crn))
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in {
       val result: Future[Result] = controller.areYouSure()
-        .apply(fakeRequest.withSession(SessionKeys.crn -> "CRNC5D7C333"))
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
+        .apply(fakeRequest.withSession(SessionKeys.crn -> crn))
+      contentType(result) shouldBe Some(contentTypeMatch)
+      charset(result) shouldBe Some(charsetMatch)
     }
 
     "return 303" in {
@@ -84,18 +87,18 @@ class DeleteControllerSpec extends AbstractTest {
   }
 
   "deleteClient()" should {
-    "delete future fail" in{
+    "delete future fail" in {
       when(dataConnector.deleteClient(any())) thenReturn Future.failed(new RuntimeException)
       val result: Future[Result] = controller.deleteClient().apply(fakeRequest
-        .withSession(SessionKeys.crn -> "testCrn"))
+        .withSession(SessionKeys.crn -> crn))
       val doc: Document = Jsoup.parse(contentAsString(result))
-      doc.title() shouldBe "Something went wrong"
+      doc.title() shouldBe ErrorMessages.pageTitle
     }
 
     "delete" in {
       when(dataConnector.deleteClient(any())) thenReturn Future(true)
       val result: Future[Result] = controller.deleteClient().apply(fakeRequest
-        .withSession(SessionKeys.crn -> "testCrn"))
+        .withSession(SessionKeys.crn -> crn))
       status(result) shouldBe Status.SEE_OTHER
     }
 
@@ -107,7 +110,7 @@ class DeleteControllerSpec extends AbstractTest {
     "delete (unsuccessfully)" in {
       when(dataConnector.deleteClient(any())) thenReturn Future(false)
       val result: Future[Result] = controller.deleteClient().apply(fakeRequest
-        .withSession(SessionKeys.crn -> "testCrn"))
+        .withSession(SessionKeys.crn -> crn))
       status(result) shouldBe Status.BAD_GATEWAY
     }
 
@@ -116,7 +119,7 @@ class DeleteControllerSpec extends AbstractTest {
   "deleteClientSuccessful()" should {
     "return 200" in {
       val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest
-        .withSession(SessionKeys.crn -> "CRNC5D7C333"))
+        .withSession(SessionKeys.crn -> crn))
       status(result) shouldBe Status.OK
     }
 
@@ -127,9 +130,9 @@ class DeleteControllerSpec extends AbstractTest {
 
     "return HTML" in {
       val result: Future[Result] = controller.deleteClientSuccessful().apply(fakeRequest
-        .withSession(SessionKeys.crn -> "CRNC5D7C333"))
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
+        .withSession(SessionKeys.crn -> crn))
+      contentType(result) shouldBe Some(contentTypeMatch)
+      charset(result) shouldBe Some(charsetMatch)
     }
   }
 }

@@ -29,6 +29,8 @@ trait WireMockHelper {
   val wiremockHost = "localhost"
   lazy val wmConfig: WireMockConfiguration = wireMockConfig().port(wiremockPort)
   lazy val wireMockServer: WireMockServer = new WireMockServer(wmConfig)
+  val headerKey: String = "Content-Type"
+  val headerValues: String = "text/json"
 
   def startWiremock(): Unit = {
     wireMockServer.start()
@@ -71,7 +73,7 @@ trait WireMockHelper {
       .willReturn(
         aResponse()
           .withStatus(status)
-          .withHeader("Content-Type", "text/json")
+          .withHeader(headerKey, headerValues)
       )
     )
 
