@@ -21,7 +21,6 @@ object SessionKeys {
 	val name: String = "name"
 	val businessName: String = "businessName"
 	val contactNumber: String = "contactNumber"
-	val property: String = "property"
 	val propertyNumber: String = "propertyNumber"
 	val postcode: String = "postcode"
 	val businessType: String = "businessType"
