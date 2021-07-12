@@ -36,7 +36,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     name = "testName",
     businessName = "testBusiness",
     contactNumber = "testContact",
-    propertyNumber = 12,
+    propertyNumber = "12",
     postcode = "testPostcode",
     businessType = "testBusinessType")
 

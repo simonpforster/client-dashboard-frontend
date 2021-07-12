@@ -42,11 +42,11 @@ class LoginControllerSpec extends AbstractTest {
 
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/example-frontend/login")
+    path = "/client/login")
 
   val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/example-frontend/login").withSession(SessionKeys.crn -> "CRN3A1766D5")
+    path = "/client/login").withSession(SessionKeys.crn -> "CRN3A1766D5")
 
   val connector: DataConnector = mock(classOf[DataConnector])
   val controller: LoginController = new LoginController(
@@ -62,7 +62,7 @@ class LoginControllerSpec extends AbstractTest {
     name = "testName",
     businessName = "testBusiness",
     contactNumber = "testContact",
-    propertyNumber = 12,
+    propertyNumber = "12",
     postcode = "testPostcode",
     businessType = "testBusinessType",
     arn = Some("testArn"))

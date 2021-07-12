@@ -35,5 +35,9 @@ class HomePageController @Inject()(mcc: MessagesControllerComponents,
       Ok(homePage())
     }
   }
+
+  def registration: Action[AnyContent] = Action {
+    Redirect("http://localhost:9007/client-registration/name-input").withNewSession
+  }
 }
 

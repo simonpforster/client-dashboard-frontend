@@ -63,12 +63,12 @@ class LoginController @Inject()(
       }, success => {
         dataConnector.login(success).map {
           case Some(client) =>
-            val call = Redirect("/example-frontend/dashboard").withSession(request.session
+            val call = Redirect("/client/dashboard").withSession(request.session
               + (SessionKeys.crn -> client.crn)
               + (SessionKeys.name -> client.name)
               + (SessionKeys.businessName -> client.businessName)
               + (SessionKeys.contactNumber -> client.contactNumber)
-              + (SessionKeys.propertyNumber -> client.propertyNumber.toString)
+              + (SessionKeys.propertyNumber -> client.propertyNumber)
               + (SessionKeys.postcode -> client.postcode)
               + (SessionKeys.businessType -> client.businessType)
             )

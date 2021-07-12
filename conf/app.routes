@@ -17,3 +17,5 @@ GET        /dashboard               uk.gov.hmrc.examplefrontend.controllers.Dash
 +nocsrf
 GET       /arn-submit              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnSubmit
 GET        /arn-remove              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnRemove
+
+GET        /registration            uk.gov.hmrc.examplefrontend.controllers.HomePageController.registration
