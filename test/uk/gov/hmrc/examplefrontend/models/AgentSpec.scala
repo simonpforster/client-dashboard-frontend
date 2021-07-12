@@ -17,14 +17,15 @@
 package uk.gov.hmrc.examplefrontend.models
 
 import play.api.libs.json.{JsSuccess, JsValue, Json}
+import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 class AgentSpec extends AbstractTest {
 
   val agentModel: Agent = Agent(arn = "ANAGENT")
   val agentJs: JsValue = Json.parse(
-    """{
-      "arn": "ANAGENT"
+    s"""{
+      "${UserClientProperties.backendARN}": "${agentModel.arn}"
       }""".stripMargin
   )
   "Agent" can {

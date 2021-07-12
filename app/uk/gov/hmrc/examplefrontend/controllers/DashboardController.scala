@@ -20,7 +20,7 @@ import play.api.data.Form
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
@@ -72,22 +72,22 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
           dataConnector.checkArn(success).flatMap {
             case true => dataConnector.addArn(clientOne, success).map {
               case true => Ok(dashboardPage(client = clientOne.copy(arn = Some(success.arn)), agentForm = emptyForm))
-                .withSession(request.session + ("clientArn" -> success.arn))
+                .withSession(request.session + (SessionKeys.arn -> success.arn))
               case false => BadRequest(dashboardPage(client = clientOne, agentForm = formWithErrors))
                 .withSession(request.session)
             }.recover {
               case _ => InternalServerError(error.standardErrorTemplate(
-                pageTitle = "Something went wrong",
-                heading = "Something went wrong",
-                message = "Come back later"))
+                pageTitle = ErrorMessages.pageTitle,
+                heading = ErrorMessages.heading,
+                message = ErrorMessages.message))
             }
             case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors
               .withError("arn", "no"))))
           }.recover {
             case _ => InternalServerError(error.standardErrorTemplate(
-              pageTitle = "Something went wrong",
-              heading = "Something went wrong",
-              message = "Come back later"))
+              pageTitle = ErrorMessages.pageTitle,
+              heading = ErrorMessages.heading,
+              message = ErrorMessages.message))
           }
         }
       )
@@ -117,9 +117,9 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
               .withSession(request.session)
           }.recover {
             case _ => InternalServerError(error.standardErrorTemplate(
-              pageTitle = "Something went wrong",
-              heading = "Something went wrong",
-              message = "Delete arn unsuccessful"))
+              pageTitle = ErrorMessages.pageTitle,
+              heading = ErrorMessages.heading,
+              message = ErrorMessages.message))
           }
         case None => Future(NotFound(dashboardPage(client = clientOne, agentForm = emptyForm))
           .withSession(request.session))

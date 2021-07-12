@@ -18,6 +18,7 @@ package uk.gov.hmrc.examplefrontend.connectors
 
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
+import uk.gov.hmrc.examplefrontend.common.{UrlKeys, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
 
 import javax.inject.Inject
@@ -25,28 +26,27 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
-  private val host = "http://localhost:9006"
+  val hdrsType: String = "Content-Type"
+  val hdrsValue: String = "application/json"
 
-  private val Agenthost = "http://localhost:9009"
+  private def wspostagent(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.agentHost + url)
+    .addHttpHeaders(hdrsType -> hdrsValue).post(jsObject)
 
-  private def wspostagent(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(Agenthost + url)
-    .addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+  private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
+    .addHttpHeaders(hdrsType -> hdrsValue).post(jsObject)
 
-  private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url)
-    .addHttpHeaders("Content-Type" -> "application/json").post(jsObject)
+  private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
+    .addHttpHeaders(hdrsType -> hdrsValue).patch(jsObject)
 
-  private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url)
-    .addHttpHeaders("Content-Type" -> "application/json").patch(jsObject)
-
-  private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(host + url)
+  private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .withBody(jsObject).delete()
 
   def login(user: User): Future[Option[Client]] = {
     val userCredentials: JsObject = Json.obj(
-      "crn" -> user.crn,
-      "password" -> user.password
+      UserClientProperties.crn -> user.crn,
+      UserClientProperties.password -> user.password
     )
-    wspost(url = "/login", jsObject = userCredentials).map { response =>
+    wspost(url = UrlKeys.login, jsObject = userCredentials).map { response =>
       response.status match {
         case 200 =>
           response.json.validate[Client] match {
@@ -60,9 +60,9 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
   def deleteClient(crn: CRN): Future[Boolean] = {
     val newCRN: JsObject = Json.obj(
-      "crn" -> crn.crn
+      UserClientProperties.crn -> crn.crn
     )
-    wsdelete(url = "/delete-client", jsObject = newCRN).map(
+    wsdelete(url = UrlKeys.deleteClient, jsObject = newCRN).map(
       _.status match {
         case 204 => true
         case _ => false
@@ -70,7 +70,7 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
   }
 
   def checkArn(agent: Agent): Future[Boolean] = {
-    wspostagent("/readAgent", Json.toJson(agent).as[JsObject]).map {
+    wspostagent(UrlKeys.readAgent, Json.toJson(agent).as[JsObject]).map {
       _.status match {
         case 200 => true
         case _ => false
@@ -80,10 +80,10 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
   def addArn(client: Client, agent: Agent): Future[Boolean] = {
     val clientAgentPair = Json.obj(
-      "crn" -> client.crn,
-      "arn" -> agent.arn
+      UserClientProperties.crn -> client.crn,
+      UserClientProperties.arn -> agent.arn
     )
-    wspatch(url = "/add-agent", jsObject = clientAgentPair).map {
+    wspatch(url = UrlKeys.addAgent, jsObject = clientAgentPair).map {
       _.status match {
         case 204 => true
         case _ => false
@@ -93,10 +93,10 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
 
   def removeArn(client: Client, agent: Agent): Future[Boolean] = {
     val clientAgentPair = Json.obj(
-      "crn" -> client.crn,
-      "arn" -> agent.arn
+      UserClientProperties.crn -> client.crn,
+      UserClientProperties.arn -> agent.arn
     )
-    wspatch(url = "/remove-agent", jsObject = clientAgentPair).map {
+    wspatch(url = UrlKeys.removeAgent, jsObject = clientAgentPair).map {
       _.status match {
         case 204 => true
         case _ => false

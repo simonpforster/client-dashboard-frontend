@@ -17,6 +17,7 @@
 package uk.gov.hmrc.examplefrontend.models
 
 import play.api.libs.json.{JsSuccess, JsValue, Json}
+import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 class ClientSpec extends AbstractTest {
@@ -30,28 +31,28 @@ class ClientSpec extends AbstractTest {
     postcode = "testPostcode",
     businessType = "testBusinessType",
     arn = Some("testArn"))
-
+  val testARN: String = "testArn"
   val testClientJs: JsValue = Json.parse(
-    """{
-				"crn": "testCrn",
-				"name": "testName",
-				"businessName": "testBusiness",
-				"contactNumber": "testContact",
-				"propertyNumber": "12",
-				"postcode": "testPostcode",
-				"businessType": "testBusinessType",
-				"arn": "testArn"
+    s"""{
+				"${UserClientProperties.crn}": "${testClient.crn}",
+				"${UserClientProperties.name}": "${testClient.name}",
+				"${UserClientProperties.businessName}": "${testClient.businessName}",
+				"${UserClientProperties.contactNumber}": "${testClient.contactNumber}",
+				"${UserClientProperties.propertyNumber}": "${testClient.propertyNumber}",
+				"${UserClientProperties.postcode}": "${testClient.postcode}",
+				"${UserClientProperties.businessType}": "${testClient.businessType}",
+				"${UserClientProperties.backendARN}": "$testARN"
 			}""".stripMargin)
 
   val testClientJsNone: JsValue = Json.parse(
-    """{
-				"crn": "testCrn",
-				"name": "testName",
-				"businessName": "testBusiness",
-				"contactNumber": "testContact",
-				"propertyNumber": "12",
-				"postcode": "testPostcode",
-				"businessType": "testBusinessType"
+    s"""{
+				"${UserClientProperties.crn}": "${testClient.crn}",
+				"${UserClientProperties.name}": "${testClient.name}",
+				"${UserClientProperties.businessName}": "${testClient.businessName}",
+				"${UserClientProperties.contactNumber}": "${testClient.contactNumber}",
+				"${UserClientProperties.propertyNumber}": "${testClient.propertyNumber}",
+				"${UserClientProperties.postcode}": "${testClient.postcode}",
+				"${UserClientProperties.businessType}": "${testClient.businessType}"
 			}""".stripMargin)
 
   "client" can {

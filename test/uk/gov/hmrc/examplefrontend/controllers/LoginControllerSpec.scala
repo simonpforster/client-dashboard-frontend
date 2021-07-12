@@ -25,7 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
@@ -40,13 +40,23 @@ class LoginControllerSpec extends AbstractTest {
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
   implicit lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
 
+  val testClient: Client = Client(
+    crn = "testCrn",
+    name = "testName",
+    businessName = "testBusiness",
+    contactNumber = "testContact",
+    propertyNumber = "12",
+    postcode = "testPostcode",
+    businessType = "testBusinessType",
+    arn = Some("testArn"))
+  val testPass: String = "12345"
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/client/login")
+    path = UrlKeys.clientLogin)
 
   val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = "/client/login").withSession(SessionKeys.crn -> "CRN3A1766D5")
+    path = UrlKeys.clientLogin).withSession(SessionKeys.crn -> testClient.crn)
 
   val connector: DataConnector = mock(classOf[DataConnector])
   val controller: LoginController = new LoginController(
@@ -57,26 +67,19 @@ class LoginControllerSpec extends AbstractTest {
     error = error,
     ec = executionContext)
 
-  val testClient: Client = Client(
-    crn = "testCrn",
-    name = "testName",
-    businessName = "testBusiness",
-    contactNumber = "testContact",
-    propertyNumber = "12",
-    postcode = "testPostcode",
-    businessType = "testBusinessType",
-    arn = Some("testArn"))
+  val contentTypeMatch: String = "text/html"
+  val charsetMatch: String = "utf-8"
 
   val testClientJs: JsValue = Json.parse(
-    """{
-      |  "crn": "testCrn",
-      |  "name": "testName",
-      |  "businessName": "testBusiness",
-      |  "contactNumber": "testContact",
-      |  "propertyNumber": 12,
-      |  "postCode": "testPostCode",
-      |  "businessType": "testBusinessType"
-      |}""".stripMargin)
+    s"""{
+       |  "${UserClientProperties.crn}": "${testClient.crn}",
+       |  "${UserClientProperties.name}": "${testClient.name}",
+       |  "${UserClientProperties.businessName}": "${testClient.businessName}",
+       |  "${UserClientProperties.contactNumber}": "${testClient.contactNumber}",
+       |  "${UserClientProperties.propertyNumber}": ${testClient.propertyNumber},
+       |  "${UserClientProperties.postcode}": "${testClient.postcode}",
+       |  "${UserClientProperties.businessType}": "${testClient.businessType}"
+       |}""".stripMargin)
 
   "login() method GET" should {
     "return 303" in {
@@ -94,8 +97,8 @@ class LoginControllerSpec extends AbstractTest {
     "return HTML" in {
       val result: Future[Result] = controller.login(fakeRequest)
 
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
+      contentType(result) shouldBe Some(contentTypeMatch)
+      charset(result) shouldBe Some(charsetMatch)
     }
   }
 
@@ -116,18 +119,18 @@ class LoginControllerSpec extends AbstractTest {
   }
 
   "loginSubmit() method POST" should {
-    "return a failed page" in{
+    "return a failed page" in {
       when(connector.login(any())).thenReturn(Future.failed(new RuntimeException))
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
-        .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+        .withFormUrlEncodedBody(UserClientProperties.crn -> testClient.crn, UserClientProperties.password -> testPass)
       val result = controller.loginSubmit(fakeRequestSubmit)
       val doc: Document = Jsoup.parse(contentAsString(result))
-      doc.title() shouldBe "Something went wrong"
+      doc.title() shouldBe ErrorMessages.pageTitle
     }
 
     "return BadRequest when there are errors on the input fields" in {
       val fakeRequestWithFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
-        .withFormUrlEncodedBody("crn" -> "", "password" -> "")
+        .withFormUrlEncodedBody(UserClientProperties.crn -> "", UserClientProperties.password -> "")
       lazy val result: Future[Result] = controller.loginSubmit(fakeRequestWithFormErrors)
 
       Jsoup.parse(contentAsString(result)).getElementById("crn").`val` shouldBe ""
@@ -138,17 +141,17 @@ class LoginControllerSpec extends AbstractTest {
     "redirect to the dashboard page with the corresponding session" in {
       when(connector.login(any())).thenReturn(Future.successful(Some(testClient)))
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
-        .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+        .withFormUrlEncodedBody(UserClientProperties.crn -> testClient.crn, UserClientProperties.password -> testPass)
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe 303
-      session(result).get("crn") shouldBe Some("testCrn")
+      session(result).get(SessionKeys.crn) shouldBe Some(testClient.crn)
     }
 
     "return Unauthorized" in {
       when(connector.login(any())) thenReturn Future.successful(None)
       val fakeRequestSubmit: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequest
-        .withFormUrlEncodedBody("crn" -> "test", "password" -> "12345")
+        .withFormUrlEncodedBody(UserClientProperties.crn -> testClient.crn, UserClientProperties.password -> testPass)
       val result: Future[Result] = controller.loginSubmit(fakeRequestSubmit)
 
       status(result) shouldBe UNAUTHORIZED

@@ -17,12 +17,12 @@
 package uk.gov.hmrc.examplefrontend.common
 
 object SessionKeys {
-	val crn = "crn"
-	val name = "name"
-	val businessName = "businessName"
-	val contactNumber = "contactNumber"
-	val propertyNumber = "propertyNumber"
-	val postcode = "postcode"
-	val businessType = "businessType"
-	val arn = "clientArn"
+	val crn: String = "crn"
+	val name: String = "name"
+	val businessName: String = "businessName"
+	val contactNumber: String = "contactNumber"
+	val propertyNumber: String = "propertyNumber"
+	val postcode: String = "postcode"
+	val businessType: String = "businessType"
+	val arn: String = "clientArn"
 }
