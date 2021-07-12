@@ -41,7 +41,6 @@ class UpdateClientControllerSpec extends AbstractTest {
   object testUpdateClientController extends UpdateClientController(
     mcc = mcc,
     updateClientPage = updateClientPage,
-    dataConnector = mockDataConnector,
     error = error,
     ec = executionContext
   )
@@ -63,7 +62,8 @@ class UpdateClientControllerSpec extends AbstractTest {
       SessionKeys.name -> client.name,
       SessionKeys.businessName -> client.businessName,
       SessionKeys.contactNumber -> client.contactNumber,
-      SessionKeys.property -> (client.propertyNumber +"/"+ client.postcode) ,
+      SessionKeys.postcode -> client.postcode,
+      SessionKeys.propertyNumber-> client.propertyNumber,
       SessionKeys.businessType -> client.businessType,
       SessionKeys.crn -> client.crn)
 

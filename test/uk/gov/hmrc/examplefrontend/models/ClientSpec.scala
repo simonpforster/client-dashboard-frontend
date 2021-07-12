@@ -76,14 +76,5 @@ class ClientSpec extends AbstractTest {
         Json.fromJson[Client](testClientJsNone) shouldBe JsSuccess(testClient.copy(arn = None))
       }
     }
-      "UserProperty " should{
-        "encode from two strings to one"in{
-          UserProperty(testClient.propertyNumber,testClient.postcode).encode() shouldBe userPropertyString
-        }
-        "decode from one string to two" in{
-          UserProperty.decode(userPropertyString).propertyNumber shouldBe testClient.propertyNumber
-          UserProperty.decode(userPropertyString).postcode shouldBe testClient.postcode
-        }
-      }
   }
 }
