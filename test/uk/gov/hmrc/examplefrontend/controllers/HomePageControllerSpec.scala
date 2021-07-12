@@ -34,6 +34,10 @@ class HomePageControllerSpec extends AbstractTest {
     method = "GET",
     path = "/example-frontend")
     .withSession(SessionKeys.crn -> "test")
+  private val fakeRequestReg = FakeRequest(
+    method = "GET",
+    path = "/client/registration"
+  )
 
   private val controller = app.injector.instanceOf[HomePageController]
 
@@ -54,6 +58,13 @@ class HomePageControllerSpec extends AbstractTest {
       val result: Future[Result] = controller.homepage(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
+    }
+  }
+
+  "registration() method" should {
+    "return SEE_OTHER" in {
+      val result: Future[Result] = controller.registration(fakeRequestReg)
+      status(result) shouldBe Status.SEE_OTHER
     }
   }
 }

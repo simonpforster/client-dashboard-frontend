@@ -60,7 +60,7 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
         request.session.get(SessionKeys.name).getOrElse(""),
         request.session.get(SessionKeys.businessName).getOrElse(""),
         request.session.get(SessionKeys.contactNumber).getOrElse(""),
-        request.session.get(SessionKeys.propertyNumber).getOrElse("1").toInt,
+        request.session.get(SessionKeys.propertyNumber).getOrElse(""),
         request.session.get(SessionKeys.postcode).getOrElse(""),
         request.session.get(SessionKeys.businessType).getOrElse(""),
         request.session.get(SessionKeys.arn))
