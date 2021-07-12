@@ -22,8 +22,8 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, UserContactNumber, UserContactNumberForm, UserProperty, UserPropertyForm}
-import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage, UpdateContactNumber}
+import uk.gov.hmrc.examplefrontend.models.{Client, UserProperty, UserPropertyForm, UserContactNumber, UserContactNumberForm, UserBusinessType, UserBusinessTypeForm}
+import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage, UpdateContactNumber, UpdateBusinessTypePage}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,6 +33,7 @@ class UpdateClientController @Inject()(
                                         updateClientPage: UpdateClientPage,
                                         updateClientPropertyPage: UpdateClientPropertyPage,
                                         updateContactNumberPage: UpdateContactNumber,
+                                        updateBusinessTypePage: UpdateBusinessTypePage,
                                         dataConnector: DataConnector,
                                         error: ErrorHandler,
                                         implicit val ec: ExecutionContext)
@@ -63,13 +64,15 @@ class UpdateClientController @Inject()(
       UserPropertyForm.submitForm.fill(UserProperty("", ""))) { property =>
       UserPropertyForm.submitForm.fill(UserProperty.decode(property))
     }
-    Ok(updateClientPropertyPage(form))
+    val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
+    Ok(updateClientPropertyPage(form,registeredClient ))
   })
 
-  def updateClientPropertySubmit = Action async { implicit request =>
+  def updateClientPropertySubmit: Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
+      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
       UserPropertyForm.submitForm.bindFromRequest().fold({ formWithErrors =>
-        Future.successful(BadRequest(updateClientPropertyPage(formWithErrors)))
+        Future.successful(BadRequest(updateClientPropertyPage(formWithErrors, registeredClient)))
       }, { success =>
         dataConnector.updateProperyDetails(success.propertyNumber, success.postcode, request.session.get(SessionKeys.crn).get).map {
           case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
@@ -90,29 +93,28 @@ class UpdateClientController @Inject()(
     }
   }
 
-  def updateContactNumber: Action[AnyContent] = Action{ implicit request =>
+  def updateContactNumber: Action[AnyContent] = Action { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
       val form = UserContactNumberForm.submitForm.fill(UserContactNumber(""))
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "","","","","","")
+      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
       Ok(updateContactNumberPage(form, registeredClient))
-    }else  Redirect(routes.LoginController.login())
-
+    } else Redirect(routes.LoginController.login())
   }
 
   def submitUpdatedContactNumber: Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "","","","","","")
+      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
       UserContactNumberForm.submitForm.bindFromRequest().fold(
         formWithErrors => Future.successful(BadRequest(updateContactNumberPage(formWithErrors, registeredClient))),
         success => {
-          dataConnector.updateContactNumber(SessionKeys.crn, success.contact).map {
+          dataConnector.updateContactNumber(request.session.get(SessionKeys.crn).get, success.contact).map {
             case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
             case false => NotImplemented(error.standardErrorTemplate(
-                          pageTitle = ErrorMessages.pageTitleUpdateContactNumber,
-                          heading = ErrorMessages.headingUpdateContactNumber,
-                          message = ErrorMessages.messageUpdateContactNumber
-                        ))
-          }.recover{
+              pageTitle = ErrorMessages.pageTitleUpdateContactNumber,
+              heading = ErrorMessages.headingUpdateContactNumber,
+              message = ErrorMessages.messageUpdateContactNumber
+            ))
+          }.recover {
             case _ => InternalServerError(error.standardErrorTemplate(
               pageTitle = ErrorMessages.pageTitle,
               heading = ErrorMessages.heading,
@@ -120,8 +122,42 @@ class UpdateClientController @Inject()(
           }
         }
       )
-    }else{
-      Future(Redirect(routes.LoginController.login()))
+    } else {
+      Future(Redirect(routes.HomePageController.homepage()))
+    }
+  }
+
+  def updateBusinessType: Action[AnyContent] = Action { implicit request =>
+    if (request.session.get(SessionKeys.crn).isDefined) {
+      val form = UserBusinessTypeForm.submitForm.fill(UserBusinessType(""))
+      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
+      Ok(updateBusinessTypePage(form, registeredClient))
+    } else Redirect(routes.LoginController.login())
+  }
+
+  def submitBusinessTypeUpdate: Action[AnyContent] = Action async { implicit request =>
+    if (request.session.get(SessionKeys.crn).isDefined) {
+      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
+      UserBusinessTypeForm.submitForm.bindFromRequest().fold(formWithErrors =>
+        Future.successful(BadRequest(updateBusinessTypePage(formWithErrors, registeredClient))),
+        success => {
+          dataConnector.updateBusinessType(request.session.get(SessionKeys.crn).get, success.businessType).map {
+            case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
+            case false => NotImplemented(error.standardErrorTemplate(
+              pageTitle = ErrorMessages.pageTitle,
+              heading = ErrorMessages.heading,
+              message = ErrorMessages.message
+            ))
+          }.recover {
+            case _ => InternalServerError(error.standardErrorTemplate(
+              pageTitle = ErrorMessages.pageTitle,
+              heading = ErrorMessages.heading,
+              message = ErrorMessages.message))
+          }
+        }
+      )
+    } else {
+      Future(Redirect(routes.HomePageController.homepage()))
     }
   }
 }

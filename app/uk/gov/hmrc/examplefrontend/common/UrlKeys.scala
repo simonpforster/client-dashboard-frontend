@@ -37,4 +37,6 @@ object UrlKeys {
   val readOneClient:String = "/read"
   val updateProperty:String = "/update-property"
   val modifyClientProperty:String = "/modify-client-property"
+
+  val updateBusiness: String = "/update-business"
 }

@@ -59,3 +59,14 @@ object UserPropertyForm {
       )(UserProperty.apply)(UserProperty.unapply)
     )
 }
+
+case class UserBusinessType(businessType: String)
+
+object UserBusinessTypeForm {
+  val submitForm: Form[UserBusinessType] =
+    Form(
+      mapping(
+        UserClientProperties.businessType -> nonEmptyText,
+      )(UserBusinessType.apply)(UserBusinessType.unapply)
+    )
+}

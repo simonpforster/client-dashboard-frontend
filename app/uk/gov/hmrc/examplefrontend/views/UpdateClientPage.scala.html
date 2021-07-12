@@ -2,13 +2,13 @@
 @this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
 @(client: Client)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some("Modify Account")) {
+@layout(pageTitle = Some("Modify Account"), Some(client)) {
 <a class="govuk-back-link" data-module="govuk-button"
    href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.dashboardMain">
     Back
 </a>
 
-<h1 class="govuk-heading-xl">Modify Account</h1>
+<h1 class="govuk-heading-xl">Update Account</h1>
     <form action="example/NameInput">
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
@@ -61,19 +61,20 @@
                 </dd>
             </div>
 
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                        Business Type
-                </dt>
-                <dd class="govuk-summary-list__value" id="PasswordValue">
-                    <p class="govuk-body">@client.businessType</p>
-                </dd>
-                <dd class="govuk-summary-list__actions">
-                    <a class="govuk-link" href="">
-                        Change<span class="govuk-visually-hidden"> contact details</span>
-                    </a>
-                </dd>
-            </div>
-        </dl>
-    </form>
+        <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+                Business Type
+            </dt>
+            <dd class="govuk-summary-list__value" id="PasswordValue">
+                <p class="govuk-body">@client.businessType</p>
+            </dd>
+            <dd class="govuk-summary-list__actions">
+                <a class="govuk-link"
+                   href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateBusinessType">
+                    Change<span class="govuk-visually-hidden"> Business Details</span>
+                </a>
+            </dd>
+        </div>
+    </dl>
+</form>
 }
