@@ -8,6 +8,7 @@ GET        /successful-logout       uk.gov.hmrc.examplefrontend.controllers.Logi
 GET        /delete-user              uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClient
 GET        /delete-select            uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.areYouSure
 GET        /deleted-client           uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClientSuccessful()
+GET        /modify-client            uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.OpenUpdateClientPage()
 
 +nocsrf
 POST       /login                   uk.gov.hmrc.examplefrontend.controllers.LoginController.loginSubmit
