@@ -1,0 +1,37 @@
+
+@import uk.gov.hmrc.examplefrontend.models.{UserContactNumber, UserContactNumberForm, Client}
+
+@this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
+@(form: Form[UserContactNumber], client: Client)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("Update Contact Number"), Some(client)) {
+
+
+<h1 class="govuk-panel__title">Update Contact Number</h1>
+
+  @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.submitUpdatedContactNumber){
+    @if(form.errors("contactNumber").nonEmpty){
+      @govukInput(Input(
+        id = "contact-number" ,
+        inputType = "number",
+        name = "contactNumber",
+        value = Some(""),
+        hint = Some(Hint(content = Text("Enter your contact number, for example - '07766445544' "))),
+        errorMessage = Some(ErrorMessage(content = Text("Please provide a valid number"))),
+        label = Label(isPageHeading = true, classes = "govuk-label--l, name, govuk-input-error", content = Text("New Contact Number:"))
+      ))
+    }else{
+      @govukInput(Input(id = "contact-number" ,inputType = "number", name = "contactNumber", value = Some(form.data("contactNumber")),
+        hint = Some(Hint(content = Text("Enter your contact number, for example - '07766445544' "))),
+        label = Label(isPageHeading = true, classes = "govuk-label--l, name, govuk-input-error", content = Text("New Contact Number:"))))
+    }
+
+
+    <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
+    <hr>
+    <a class="govuk-link" data-module="govuk-button"
+       href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.OpenUpdateClientPage">
+      Cancel
+    </a>
+  }
+}

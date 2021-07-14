@@ -19,5 +19,9 @@ package uk.gov.hmrc.examplefrontend.common
 object ErrorMessages {
   val pageTitle: String = "Something went wrong"
   val heading: String = "Something went wrong"
-  val message: String = "Come back later"
+  val message: String = "Please come back later"
+
+  val pageTitleUpdateContactNumber: String = "Something went wrong"
+  val headingUpdateContactNumber: String = "Something went wrong, your contact number couldn't be updated"
+  val messageUpdateContactNumber: String = "Please come back later"
 }
