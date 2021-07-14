@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
+import akka.http.scaladsl.model.HttpHeader.ParsingResult
+import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.SessionKeys
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
-import uk.gov.hmrc.examplefrontend.views.html.UpdateClientPage
+import uk.gov.hmrc.examplefrontend.models.{Client, UserProperty, UserPropertyForm}
+import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -31,6 +33,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class UpdateClientController @Inject()(
                                         mcc: MessagesControllerComponents,
                                         updateClientPage: UpdateClientPage,
+                                        updateClientPropertyPage: UpdateClientPropertyPage,
+                                        dataConnector: DataConnector,
                                         error: ErrorHandler,
                                         implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
@@ -38,16 +42,70 @@ class UpdateClientController @Inject()(
 
   def OpenUpdateClientPage: Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
-      val crn: String = request.session.get(SessionKeys.crn).getOrElse("")
-      val name = request.session.get(SessionKeys.name).getOrElse("")
-      val businessName = request.session.get(SessionKeys.businessName).getOrElse("")
-      val contactNumber: String = request.session.get(SessionKeys.contactNumber).getOrElse("")
-      val propertyNumber: String = request.session.get(SessionKeys.propertyNumber).getOrElse("")
-      val postcode:String = request.session.get(SessionKeys.postcode).getOrElse("")
-      val businessType: String = request.session.get(SessionKeys.businessType).getOrElse("")
-      val arn: Option[String] = request.session.get(SessionKeys.arn)
-      val clientOne = Client(crn, name, businessName, contactNumber, propertyNumber,postcode, businessType, arn)
-      Future.successful(Ok(updateClientPage(clientOne)))
+      dataConnector.readOne(request.session.get(SessionKeys.crn).get).map {
+        case Some(client) => Ok(updateClientPage(client))
+        case _ => BadRequest(error.standardErrorTemplate(
+          pageTitle = ErrorMessages.pageTitle,
+          heading = ErrorMessages.heading,
+          message = ErrorMessages.message))
+      }.recover {
+        case _ => InternalServerError(error.standardErrorTemplate(
+          pageTitle = ErrorMessages.pageTitle,
+          heading = ErrorMessages.heading,
+          message = ErrorMessages.message))
+      }
+    } else {
+      Future.successful(Redirect(routes.HomePageController.homepage()))
+    }
+  }
+
+  def OpenUpdateClientProperty: Action[AnyContent] = Action(implicit request => {
+    val form: Form[UserProperty] = request.session.get(SessionKeys.property).fold(
+      UserPropertyForm.submitForm.fill(UserProperty("", ""))) { property =>
+      UserPropertyForm.submitForm.fill(UserProperty.decode(property))
+    }
+    Ok(updateClientPropertyPage(form))
+  })
+
+  def updateClientPropertySubmit = Action async { implicit request =>
+    if (request.session.get(SessionKeys.crn).isDefined) {
+      UserPropertyForm.submitForm.bindFromRequest().fold({ formWithErrors =>
+        Future.successful(BadRequest(updateClientPropertyPage(formWithErrors)))
+      }, { success =>
+        dataConnector.readOne(request.session.get(SessionKeys.crn).getOrElse("")).flatMap {
+          case Some(client) =>
+            val newClient = Client(
+              client.crn,
+              client.name,
+              client.businessName,
+              client.contactNumber,
+              success.propertyNumber,
+              success.postcode,
+              client.businessType
+            )
+            dataConnector.update(newClient).map {
+              case true => Redirect(routes.UpdateClientController.OpenUpdateClientPage())
+              case false => NotImplemented(error.standardErrorTemplate(
+                pageTitle = ErrorMessages.pageTitle,
+                heading = ErrorMessages.heading,
+                message = ErrorMessages.message))
+            }.recover {
+              case _ => NotFound(error.standardErrorTemplate(
+                pageTitle = ErrorMessages.pageTitle,
+                heading = ErrorMessages.heading,
+                message = ErrorMessages.message))
+            }
+          case None => Future.successful(NotFound(error.standardErrorTemplate(
+            pageTitle = ErrorMessages.pageTitle,
+            heading = ErrorMessages.heading,
+            message = ErrorMessages.message)))
+        }.recover {
+          case _ => InternalServerError(error.standardErrorTemplate(
+            pageTitle = ErrorMessages.pageTitle,
+            heading = ErrorMessages.heading,
+            message = ErrorMessages.message))
+        }
+      })
     } else {
       Future.successful(Redirect(routes.HomePageController.homepage()))
     }

@@ -1,22 +1,25 @@
 # microservice specific routes
 
-->         /govuk-frontend          govuk.Routes
-->         /hmrc-frontend           hmrcfrontend.Routes
-GET        /                        uk.gov.hmrc.examplefrontend.controllers.HomePageController.homepage
-GET        /login                   uk.gov.hmrc.examplefrontend.controllers.LoginController.login
-GET        /successful-logout       uk.gov.hmrc.examplefrontend.controllers.LoginController.logOut
-GET        /delete-user              uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClient
-GET        /delete-select            uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.areYouSure
-GET        /deleted-client           uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClientSuccessful()
-GET        /modify-client            uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.OpenUpdateClientPage()
+->         /govuk-frontend            govuk.Routes
+->         /hmrc-frontend             hmrcfrontend.Routes
+GET        /                          uk.gov.hmrc.examplefrontend.controllers.HomePageController.homepage
+GET        /login                     uk.gov.hmrc.examplefrontend.controllers.LoginController.login
+GET        /successful-logout         uk.gov.hmrc.examplefrontend.controllers.LoginController.logOut
+GET        /delete-user               uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClient
+GET        /delete-select             uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.areYouSure
+GET        /deleted-client            uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClientSuccessful()
+GET        /modify-client             uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.OpenUpdateClientPage()
+GET        /modify-client-property    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.OpenUpdateClientProperty
++nocsrf
+POST      /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateClientPropertySubmit
 
 +nocsrf
-POST       /login                   uk.gov.hmrc.examplefrontend.controllers.LoginController.loginSubmit
-GET        /assets/*file            controllers.Assets.versioned(path = "/public", file: Asset)
-GET        /dashboard               uk.gov.hmrc.examplefrontend.controllers.DashboardController.dashboardMain
+POST       /login                     uk.gov.hmrc.examplefrontend.controllers.LoginController.loginSubmit
+GET        /assets/*file              controllers.Assets.versioned(path = "/public", file: Asset)
+GET        /dashboard                 uk.gov.hmrc.examplefrontend.controllers.DashboardController.dashboardMain
 
 +nocsrf
-GET       /arn-submit              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnSubmit
-GET        /arn-remove              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnRemove
+GET       /arn-submit                 uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnSubmit
+GET        /arn-remove                uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnRemove
 
-GET        /registration            uk.gov.hmrc.examplefrontend.controllers.HomePageController.registration
+GET        /registration              uk.gov.hmrc.examplefrontend.controllers.HomePageController.registration

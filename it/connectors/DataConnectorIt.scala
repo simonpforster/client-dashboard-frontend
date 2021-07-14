@@ -17,11 +17,11 @@
 package connectors
 
 import helpers.WireMockHelper
-import org.scalatest.BeforeAndAfterAll
+import org.scalatest.{BeforeAndAfterAll, stats}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND}
+import play.api.http.Status.{ACCEPTED, BAD_REQUEST, NOT_FOUND}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.common.UrlKeys
@@ -62,7 +62,6 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     super.afterAll()
   }
 
-
   "DataConnector" can {
     "delete" should {
       "succesfully delete a client" in {
@@ -87,6 +86,27 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         result shouldBe false
       }
 
+      "read One Client" in {
+        stubGet(
+          url = UrlKeys.readOneClient,
+          status = 200,
+          responseBody = Json.stringify(testClientJson))
+
+        val result: Option[Client] = await(connector.readOne(testClient.crn))
+        result shouldBe Some(testClient)
+      }
+
+      "update One client" in{
+        stubPut(
+          url = UrlKeys.updateClient,
+          status = 201,
+          responseBody = Json.stringify(testClientJson))
+
+        val result: Boolean = await(connector.update(testClient))
+        result shouldBe true
+      }
+
+
       "bad request no client deleted" in {
         stubDelete(
           url = UrlKeys.deleteClient,
@@ -96,6 +116,19 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         val result: Boolean = await(connector.deleteClient(crnTest))
 
         result shouldBe false
+      }
+    }
+
+    "update client" should {
+      "succesfully update a client" in {
+        stubPut(
+          url = UrlKeys.updateClient,
+          status = ACCEPTED,
+          responseBody = Json.stringify(testClientJson))
+
+        val result: Option[Client] = await(connector.login(testUser))
+
+        result shouldBe Some(testClient)
       }
     }
 

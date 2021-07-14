@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.examplefrontend.models
 
+import play.api.data.Form
+import play.api.data.Forms.{mapping, nonEmptyText}
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 
 case class Client(crn: String,
                   name: String,
@@ -31,3 +34,27 @@ object Client {
   implicit val format: OFormat[Client] = Json.format[Client]
 }
 
+case class UserProperty(propertyNumber: String, postcode: String) {
+  def encode(): String = {
+    propertyNumber + "/" + postcode
+  }
+}
+
+object UserProperty {
+  def decode(x: String): UserProperty = {
+    val (propertyNumber, postcode): (String, String) = x.split("/").toList match {
+      case propertyNumber :: postcode :: _ => (propertyNumber, postcode)
+    }
+    UserProperty(propertyNumber = propertyNumber, postcode = postcode)
+  }
+}
+
+object UserPropertyForm {
+  val submitForm: Form[UserProperty] =
+    Form(
+      mapping(
+        UserClientProperties.propertyNumber -> nonEmptyText,
+        UserClientProperties.postcode -> nonEmptyText
+      )(UserProperty.apply)(UserProperty.unapply)
+    )
+}
