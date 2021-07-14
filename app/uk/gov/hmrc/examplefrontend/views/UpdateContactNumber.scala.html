@@ -5,17 +5,11 @@
 @(form: Form[UserContactNumber], client: Client)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = Some("Update Contact Number"), Some(client)) {
-<a class="govuk-back-link" data-module="govuk-button"
-   href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.dashboardMain">
-  Back
-</a>
 
-<h1 class="govuk-heading-xl">Update Contact Number</h1>
-<div class="govuk-details__text govuk-body">
-  We need to know your nationality so we can work out which elections you’re entitled to vote in. If you cannot provide your nationality, you’ll have to send copies of identity documents through the post.
-</div>
 
-  @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.submitUpdatedContactNumber,'class -> "govuk-body"){
+<h1 class="govuk-panel__title">Update Contact Number</h1>
+
+  @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.submitUpdatedContactNumber){
     @if(form.errors("contactNumber").nonEmpty){
       @govukInput(Input(
         id = "contact-number" ,
@@ -34,5 +28,10 @@
 
 
     <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
+    <hr>
+    <a class="govuk-link" data-module="govuk-button"
+       href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.OpenUpdateClientPage">
+      Cancel
+    </a>
   }
 }

@@ -23,10 +23,8 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, UserProperty, UserPropertyForm}
-import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage}
-import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client, UserContactNumber, UserContactNumberForm, UserProperty}
-import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateContactNumber}
+import uk.gov.hmrc.examplefrontend.models.{Client, UserContactNumber, UserContactNumberForm, UserProperty, UserPropertyForm}
+import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage, UpdateContactNumber}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
