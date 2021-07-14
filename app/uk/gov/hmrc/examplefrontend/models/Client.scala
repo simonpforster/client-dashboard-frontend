@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.examplefrontend.models
 
+import play.api.data.Form
+import play.api.data.Forms.{mapping, nonEmptyText}
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 
 case class Client(crn: String,
                   name: String,

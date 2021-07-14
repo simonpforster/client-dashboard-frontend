@@ -10,7 +10,8 @@ GET        /delete-select             uk.gov.hmrc.examplefrontend.controllers.De
 GET        /deleted-client            uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClientSuccessful()
 GET        /modify-client             uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.OpenUpdateClientPage()
 GET        /modify-client-property    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.OpenUpdateClientProperty
-POST       /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateProperty()
++nocsrf
+POST      /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateClientPropertySubmit
 
 +nocsrf
 POST       /login                     uk.gov.hmrc.examplefrontend.controllers.LoginController.loginSubmit

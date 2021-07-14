@@ -1,8 +1,10 @@
 @import helper._
-@import uk.gov.hmrc.examplefrontend.models.{Client,UserPropertyForm,UserProperty}
+
 @import uk.gov.hmrc.govukfrontend.views.html.components._
+
+@import uk.gov.hmrc.examplefrontend.models.{UserPropertyForm,UserProperty}
 @this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
-@(form: Form[UserProperty], client:Client)(implicit request: Request[_], messages: Messages)
+@(form: Form[UserProperty])(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = Some("Enter Address")) {
 <h1 class="govuk-heading-xl"  id="Name Value">Enter Property number and address</h1>
@@ -12,8 +14,8 @@
 </span>
 }
 
-<a href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateProperty" class="govuk-back-link">Back</a>
-@helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateProperty,'class -> "govuk-body"){
+<a href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.OpenUpdateClientPage" class="govuk-back-link">Back</a>
+@helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateClientPropertySubmit,'class -> "govuk-body"){
 @if(form.errors("propertyNumber").nonEmpty){
 @govukInput(Input(id = "property-number", name = "propertyNumber", value = Some(form.data("propertyNumber")), label = Label(content = Text("Property Number:")), hint = Some(Hint(content = Text("example: 10"))), errorMessage = Some(ErrorMessage(content = Text("Please provide a valid number")))))
 }else{
