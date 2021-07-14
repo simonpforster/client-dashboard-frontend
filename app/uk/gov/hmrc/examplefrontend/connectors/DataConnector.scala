@@ -144,11 +144,26 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
     }
   }
 
+  def updateClientName(crn: String, newName: String): Future[Boolean] = {
+    val jsObj = Json.obj(
+      UserClientProperties.crn -> crn,
+      UserClientProperties.name -> newName
+    )
+
+    wspatch(UrlKeys.updateClientName, jsObj).map {
+      _.status match {
+        case NO_CONTENT => true
+        case _ => false
+      }
+    }
+  }
+
   def updateContactNumber(crn: String, updatedContactNumber: String): Future[Boolean] = {
     val objectToBeSend = Json.obj(
       UserClientProperties.crn -> crn,
       UserClientProperties.contactNumber -> updatedContactNumber,
     )
+
     wspatch(UrlKeys.updateContactNumber, objectToBeSend).map {
       _.status match {
         case NO_CONTENT => true

@@ -33,6 +33,17 @@ object UserForm {
     )
 }
 
+case class UserName(name: String)
+
+object UserNameForm {
+  val submitForm: Form[UserName] =
+    Form(
+      mapping(
+        UserClientProperties.name -> nonEmptyText
+      )(UserName.apply)(UserName.unapply)
+    )
+}
+
 
 case class UserContactNumber(contact: String)
 

@@ -1,0 +1,34 @@
+@import helper._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.examplefrontend.models.{UserName, UserNameForm}
+@this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
+
+@(form: Form[UserName])(implicit request: Request[_], messages: Messages)
+
+
+@layout(pageTitle = Some("Update Name")) {
+
+<a class="govuk-link" data-module="govuk-button"
+   href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.openUpdateClientPage">
+    Cancel
+</a>
+
+<h1 class="govuk-panel__title">Update Name</h1>
+
+<span id="passport-issued-error" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span> Please enter full name
+</span>
+        @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateNameSubmit,'class -> "govuk-body"){
+        @if(form.errors("name").nonEmpty){
+            @govukInput(Input(id = "name", name = "name", value = Some(form.data("name")), label = Label(content = Text("Full name:")),
+                hint = Some(Hint(content = Text("Enter your full name, for example - 'John Smith'"))),
+                errorMessage = Some(ErrorMessage(content = Text("Please provide your First Name and Last Name")))))
+        }else{
+            @govukInput(Input(id = "name", name = "name", value = Some(form.data("name")),
+                hint = Some(Hint(content = Text("Enter your full name, for example - 'John Smith'"))),
+                label = Label(isPageHeading = true, classes = "govuk-label--l, name, govuk-input-error",
+                content = Text("Full name:"))))
+        }
+        <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
+    }
+}

@@ -27,3 +27,6 @@ GET        /update-business-type    uk.gov.hmrc.examplefrontend.controllers.Upda
 +nocsrf
 POST       /update-business-type    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.submitBusinessTypeUpdate
 
+GET        /update-client-name      uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateName
++nocsrf
+POST       /update-client-name uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateNameSubmit

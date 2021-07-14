@@ -20,14 +20,15 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status
+import play.api.http.Status.{BAD_REQUEST, OK, SEE_OTHER, SERVICE_UNAVAILABLE}
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
-import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, status}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.Client
-import uk.gov.hmrc.examplefrontend.views.html.{DashboardPage, UpdateClientPage, UpdateClientPropertyPage, UpdateContactNumber, UpdateBusinessTypePage}
+import uk.gov.hmrc.examplefrontend.views.html._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,21 +37,25 @@ class UpdateClientControllerSpec extends AbstractTest {
   lazy val updateClientPage: UpdateClientPage = app.injector.instanceOf[UpdateClientPage]
   lazy val updateContactNumber: UpdateContactNumber = app.injector.instanceOf[UpdateContactNumber]
   lazy val updateBusinessTypePage: UpdateBusinessTypePage = app.injector.instanceOf[UpdateBusinessTypePage]
+  lazy val nameUpdatePage: UpdateNamePage = app.injector.instanceOf[UpdateNamePage]
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
-  lazy val mockupdateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
-  implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
+  lazy val updateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
 
   object testUpdateClientController extends UpdateClientController(
-    mcc,
-    updateClientPage,
-    mockupdateClientPropertyPage,
-    updateContactNumber,
-    updateBusinessTypePage,
-    mockDataConnector,
-    error,
-    executionContext
+    mcc = mcc,
+    updateClientPage = updateClientPage,
+    nameUpdatePage = nameUpdatePage,
+		updateClientPropertyPage = updateClientPropertyPage,
+		updateContactNumberPage = updateContactNumber,
+		updateBusinessTypePage= updateBusinessTypePage,
+    error = error,
+    dataConnector = mockDataConnector,
+    ec = executionContext
   )
+
+  val newName = "updatedClientName"
 
   private val client: Client = Client(
     crn = "CRN",
@@ -81,9 +86,7 @@ class UpdateClientControllerSpec extends AbstractTest {
     method = "GET",
     path = UrlKeys.modifyClient)
     .withSession(SessionKeys.crn -> client.crn)
-  val fakeRequestWithoutSessionClientPage: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
-    method = "GET",
-    path = UrlKeys.modifyClient)
+
   val fakeRequestBusinessType: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = UrlKeys.updateBusiness
@@ -92,6 +95,28 @@ class UpdateClientControllerSpec extends AbstractTest {
     method = "GET",
     path = UrlKeys.updateBusiness
   )
+
+  val fakeRequestUpdate: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = UrlKeys.updateClientName)
+
+  val fakeRequestWithoutSessionClientPage: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = UrlKeys.modifyClient)
+
+	val fakeRequestSubmitUpdate: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+		method = "POST",
+		path = UrlKeys.updateClientName)
+
+	val testClient: Client = Client(
+		crn = "testCrn",
+		name = "testName",
+		businessName = "testBusiness",
+		contactNumber = "testContact",
+		propertyNumber = "12",
+		postcode = "testPostcode",
+		businessType = "testBusinessType",
+		arn = Some("testArn"))
 
   "OpenUpdateClientPage" should {
     "return status Ok" in {
@@ -102,6 +127,7 @@ class UpdateClientControllerSpec extends AbstractTest {
       contentType(result) shouldBe Some("text/html")
       contentAsString(result) should include("Modify Account")
     }
+
     "return status BadRequest" in {
       when(mockDataConnector.readOne(any())) thenReturn Future.successful(None)
       val result: Future[Result] = testUpdateClientController.openUpdateClientPage(fakeRequestClientPage)
@@ -110,6 +136,7 @@ class UpdateClientControllerSpec extends AbstractTest {
       contentType(result) shouldBe Some("text/html")
       contentAsString(result) should include("Something went wrong")
     }
+
     "return status Redirect" in {
       val result: Future[Result] = testUpdateClientController.openUpdateClientPage(fakeRequestWithoutSessionClientPage)
       status(result) shouldBe Status.SEE_OTHER
@@ -219,16 +246,83 @@ class UpdateClientControllerSpec extends AbstractTest {
         status(result) shouldBe Status.NOT_IMPLEMENTED
       }
     }
-
-    "return status InternalServerError" when {
-      "form without errors & with session(logged in) & updateContactNumber connector fails" in {
-        when(mockDataConnector.updateContactNumber(any(), any())) thenReturn Future.failed(new Exception)
-        val result = testUpdateClientController.submitUpdatedContactNumber(fakeRequestContactNumber.withFormUrlEncodedBody(UserClientProperties.contactNumber -> "01234567891"))
-
-        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      }
-    }
   }
+
+	"nameUpdate()" can {
+		"successfully run" should {
+			"return OK if crn in session" in {
+				val result: Future[Result] = testUpdateClientController.updateName(fakeRequestUpdate.withSession(SessionKeys.crn -> testClient.crn))
+
+				when(mockDataConnector.readOne(any())).thenReturn(Future.successful(Some(testClient)))
+
+				status(result) shouldBe OK
+			}
+
+			"redirect login if no crn in session" in {
+				val result: Future[Result] = testUpdateClientController.updateName(fakeRequestUpdate)
+
+				status(result) shouldBe SEE_OTHER
+			}
+		}
+ 	}
+
+	"submitNameUpdate()" can {
+		"successfully pass info in the session" should {
+			"return OK and passes updateName in session" in {
+				when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(true))
+
+				val result: Future[Result] = testUpdateClientController.updateNameSubmit(fakeRequestSubmitUpdate
+					.withSession(SessionKeys.crn -> testClient.crn)
+					.withFormUrlEncodedBody("name" -> newName))
+
+				status(result) shouldBe SEE_OTHER
+			}
+		}
+
+		"fail with BAD REQUEST" should {
+			"when no form is passed with" in {
+				when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(true))
+
+				val result: Future[Result] = testUpdateClientController.updateNameSubmit(fakeRequestSubmitUpdate
+					.withSession(SessionKeys.crn -> testClient.crn)
+					.withFormUrlEncodedBody(UserClientProperties.name -> ""))
+
+				status(result) shouldBe BAD_REQUEST
+			}
+		}
+
+		"fail with SERVICE UNAVAILABLE" should {
+			"when update fails for unknown reason" in {
+				when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(false))
+
+				val result: Future[Result] = testUpdateClientController.updateNameSubmit(fakeRequestSubmitUpdate
+					.withSession(SessionKeys.crn -> testClient.crn)
+					.withFormUrlEncodedBody(UserClientProperties.name -> newName))
+
+				status(result) shouldBe SERVICE_UNAVAILABLE
+			}
+		}
+
+		"fail with BAD GATEWAY" should {
+			"when accessed with no crn" in {
+				val result: Future[Result] = testUpdateClientController.updateNameSubmit(fakeRequestSubmitUpdate
+				  .withFormUrlEncodedBody(UserClientProperties.name -> newName))
+
+				status(result) shouldBe SEE_OTHER
+			}
+		}
+
+		"fail with NOT FOUND" should {
+			"when RunTimeException thrown" in {
+				when(mockDataConnector.updateClientName(any(), any())) thenReturn Future.failed(new RuntimeException)
+				val result: Future[Result] = testUpdateClientController.updateNameSubmit(fakeRequestProperty
+					.withFormUrlEncodedBody(UserClientProperties.name -> newName))
+				status(result) shouldBe Status.NOT_FOUND
+			}
+		}
+	}
+
+
 
   "updateBusinessType GET " should {
     "return status Ok " when {
@@ -269,7 +363,7 @@ class UpdateClientControllerSpec extends AbstractTest {
     }
     "return status InternalServerError" when {
       "session/crn exists, form without errors and updateBusinessType connector fails " in {
-        when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.failed(new Exception)
+        when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.failed(new RuntimeException)
         val result = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessType.withFormUrlEncodedBody(UserClientProperties.businessType -> "Partnership"))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
@@ -281,5 +375,4 @@ class UpdateClientControllerSpec extends AbstractTest {
       }
     }
   }
-
 }

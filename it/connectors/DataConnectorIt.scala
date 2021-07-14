@@ -17,11 +17,11 @@
 package connectors
 
 import helpers.WireMockHelper
-import org.scalatest.{BeforeAndAfterAll, stats}
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{ACCEPTED, BAD_REQUEST, NOT_FOUND}
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.common.UrlKeys
@@ -46,6 +46,8 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
   val testUser: User = User(
     crn = "testCrn",
     password = "testPass")
+
+  val testNewName: String = "testNewName"
 
   lazy val crn: JsValue = Json.toJson(crnTest)
   val testARN: Agent = Agent("testArn")
@@ -248,7 +250,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "succeed" in {
         stubPatch(
           url = UrlKeys.updateContactNumber,
-          status = 204,
+          status = NO_CONTENT,
           responseBody = "")
 
         val result = await(connector.updateContactNumber(testClient.crn, testClient.contactNumber))
@@ -267,6 +269,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         result shouldBe false
       }
     }
+
 
     "updateBusinessType" can {
       "succeed" in {
@@ -289,6 +292,32 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         val result = await(connector.updateBusinessType(testClient.crn, testClient.businessType))
 
         result shouldBe false
+      }
+    }
+
+    "updateClientName() PATCH REQUEST" should {
+      "succeed" in {
+        stubPatch(
+          url = UrlKeys.updateClientName,
+          status = NO_CONTENT,
+          responseBody = "")
+
+        val result: Boolean = await(connector.updateClientName(testClient.crn, testNewName))
+
+        result shouldBe true
+      }
+
+
+      "fail" in {
+        stubPatch(
+          url = UrlKeys.updateClientName,
+          status = 500,
+          responseBody = "")
+
+        val result = await(connector.updateClientName(testClient.crn, testNewName))
+
+        result shouldBe false
+
       }
     }
   }
