@@ -33,8 +33,8 @@ object UrlKeys {
   val login: String = "/login"
   val clientLogin: String = "/client/login"
   val modifyClient:String ="/modify-client"
-  val updateClient:String = "/update-client"
-  val readOneClient:String = "/read"
-
+  val updateContactNumber:String ="/update-client"
+  val readOneClient:String ="/read"
+  val updateClient:String ="/update-client"
   val modifyClientProperty:String = "/modify-client-property"
 }

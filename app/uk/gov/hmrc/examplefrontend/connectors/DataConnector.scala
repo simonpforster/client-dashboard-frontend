@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.examplefrontend.connectors
 
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.examplefrontend.common.{UrlKeys, UserClientProperties}
@@ -35,11 +36,38 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
   private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).post(jsObject)
 
+  private def wsput(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
+    .addHttpHeaders(hdrsType -> hdrsValue).put(jsObject)
+
   private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).patch(jsObject)
 
   private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .withBody(jsObject).delete()
+  private def wsget(url:String, jsObject: JsObject):Future[WSResponse] = ws.url(UrlKeys.host + url)
+    .withBody(jsObject).get()
+
+
+  def readOne(crn:String):Future[Option[Client]]={
+    val crnObj = Json.obj(
+      UserClientProperties.crn -> crn)
+    wsget(UrlKeys.readOneClient,crnObj).map{response =>
+      response.status match {
+        case 200 => response.json.validate[Client] match {
+          case JsSuccess(client, _) => Some(client)
+          case JsError(_) => None
+        }
+        case 404 => throw new Exception("NotFound")
+      }
+    }
+  }
+  def update(client: Client):Future[Boolean]={
+    ws.url(UrlKeys.host + UrlKeys.updateClient).put(Json.toJson(client)).map(
+      _.status match {
+        case 201 => true
+        case 400 => false
+      })
+  }
 
   private def wsget(url:String, jsObject: JsObject):Future[WSResponse] = ws.url(UrlKeys.host + url)
     .withBody(jsObject).get()
@@ -128,4 +156,20 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       }
     }
   }
+
+  def updateContactNumber(crn: String, updatedContactNumber: String): Future[Boolean] = {
+    val objectToBeSend = Json.obj(
+      UserClientProperties.crn -> crn,
+      UserClientProperties.contactNumber -> updatedContactNumber,
+    )
+
+    wsput(UrlKeys.updateContactNumber, objectToBeSend).map {
+      _.status match {
+        case NO_CONTENT => true
+        case _ => false
+      }
+    }
+  }
+
+
 }

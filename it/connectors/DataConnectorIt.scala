@@ -247,6 +247,32 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         result shouldBe false
       }
     }
+
+    "updateContactNumber" can{
+      "succeed" in {
+        stubPut(
+          url = UrlKeys.updateContactNumber,
+          status = 204,
+          responseBody = "")
+
+        val result = await(connector.updateContactNumber(testClient.crn, testClient.contactNumber))
+
+        result shouldBe true
+      }
+
+      "fail" in {
+        stubPut(
+          url = UrlKeys.updateContactNumber,
+          status = 500,
+          responseBody = "")
+
+        val result = await(connector.updateContactNumber(testClient.crn, testClient.contactNumber))
+
+        result shouldBe false
+      }
+
+
+    }
   }
 
   "error handler" can {
