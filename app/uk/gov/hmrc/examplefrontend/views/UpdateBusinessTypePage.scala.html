@@ -1,15 +1,18 @@
 @import uk.gov.hmrc.examplefrontend.models.{Client, UserBusinessType, UserBusinessTypeForm}
-@this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
+@this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
 
 @(form: Form[UserBusinessType], client: Client)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = Some("Update Business Type"), Some(client)) {
 <h1 class="govuk-heading-xl">Update Business Type</h1>
 @if(form.errors.nonEmpty){
+        @defining(form.errors.map { error =>
+        ErrorLink(href = Some(s"#${error.key}"), content = Text(messages(error.message, error.args:_*)))}) { errorLinks =>
+        @govukErrorSummary(ErrorSummary(
+        errorList = errorLinks,
+        title = Text(messages("Please select your business type"))))
 
-<span id="passport-issued-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> Please select your business type:
-        </span>
+    }
 }
 
 <h2 class="govuk-heading-m" id="Name Value"> Please select one of the following business types below:</h2>
