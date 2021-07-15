@@ -20,7 +20,6 @@ object UrlKeys {
   val host: String = "http://localhost:9006"
   val agentHost: String = "http://localhost:9009"
   val registrationNI: String = "http://localhost:9007/client-registration/name-input"
-
   val frontend: String = "/example-frontend"
   val dashboard: String = "/client/dashboard"
   val clientRegistration: String = "/client/registration"
@@ -34,7 +33,8 @@ object UrlKeys {
   val clientLogin: String = "/client/login"
   val modifyClient:String ="/modify-client"
   val updateContactNumber:String ="/update-contact-number"
-  val readOneClient:String ="/read"
-  val updateClient:String ="/update-client"
+  val updateClient:String = "/update-client"
+  val readOneClient:String = "/read"
+  val updateProperty:String = "/update-property"
   val modifyClientProperty:String = "/modify-client-property"
 }

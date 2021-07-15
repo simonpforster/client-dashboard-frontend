@@ -41,6 +41,7 @@ trait WireMockHelper {
 
   def resetWiremock(): Unit = WireMock.reset()
 
+
   def stubPost(url: String, status: Integer, responseBody: String): StubMapping =
     stubFor(post(urlMatching(url))
       .willReturn(

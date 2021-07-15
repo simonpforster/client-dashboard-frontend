@@ -15,40 +15,28 @@
  */
 
 package uk.gov.hmrc.examplefrontend.connectors
-
 import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.examplefrontend.common.{UrlKeys, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-
 class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
-
   val hdrsType: String = "Content-Type"
   val hdrsValue: String = "application/json"
-
   private def wspostagent(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.agentHost + url)
     .addHttpHeaders(hdrsType -> hdrsValue).post(jsObject)
-
   private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).post(jsObject)
-
   private def wsput(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).put(jsObject)
-
   private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).patch(jsObject)
-
   private def wsdelete(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .withBody(jsObject).delete()
-
   private def wsget(url:String, jsObject: JsObject):Future[WSResponse] = ws.url(UrlKeys.host + url)
     .withBody(jsObject).get()
-
-
   def readOne(crn:String):Future[Option[Client]]={
     val crnObj = Json.obj(
       UserClientProperties.crn -> crn)
@@ -62,7 +50,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       }
     }
   }
-
   def update(client: Client):Future[Boolean]={
     ws.url(UrlKeys.host + UrlKeys.updateClient).put(Json.toJson(client)).map(
       _.status match {
@@ -70,7 +57,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
         case 400 => false
       })
   }
-
   def login(user: User): Future[Option[Client]] = {
     val userCredentials: JsObject = Json.obj(
       UserClientProperties.crn -> user.crn,
@@ -87,7 +73,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       }
     }
   }
-
   def deleteClient(crn: CRN): Future[Boolean] = {
     val newCRN: JsObject = Json.obj(
       UserClientProperties.crn -> crn.crn
@@ -98,7 +83,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
         case _ => false
       })
   }
-
   def checkArn(agent: Agent): Future[Boolean] = {
     wspostagent(UrlKeys.readAgent, Json.toJson(agent).as[JsObject]).map {
       _.status match {
@@ -107,7 +91,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       }
     }
   }
-
   def addArn(client: Client, agent: Agent): Future[Boolean] = {
     val clientAgentPair = Json.obj(
       UserClientProperties.crn -> client.crn,
@@ -120,7 +103,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       }
     }
   }
-
   def removeArn(client: Client, agent: Agent): Future[Boolean] = {
     val clientAgentPair = Json.obj(
       UserClientProperties.crn -> client.crn,
@@ -133,18 +115,30 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
       }
     }
   }
-
   def updateContactNumber(crn: String, updatedContactNumber: String): Future[Boolean] = {
     val objectToBeSend = Json.obj(
       UserClientProperties.crn -> crn,
       UserClientProperties.contactNumber -> updatedContactNumber,
     )
-
     wspatch(UrlKeys.updateContactNumber, objectToBeSend).map {
       _.status match {
         case NO_CONTENT => true
         case _ => false
       }
     }
+  }
+
+  def updateProperyDetails(propertyNumber:String,postcode:String, crn:String):Future[Boolean]={
+    val property = Json.obj(
+      UserClientProperties.crn -> crn,
+      UserClientProperties.propertyNumber -> propertyNumber,
+      UserClientProperties.postcode -> postcode,
+    )
+    ws.url(UrlKeys.host + UrlKeys.updateProperty).patch(Json.toJson(property)).map(
+      _.status match{
+        case  NO_CONTENT => true
+        case  _ => false
+      }
+    )
   }
 }
