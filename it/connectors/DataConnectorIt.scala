@@ -106,6 +106,15 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         result shouldBe true
       }
 
+      "update property information" in{
+        stubPatch(
+          url = UrlKeys.updateProperty,
+          status = 204,
+          responseBody = Json.stringify(testClientJson))
+
+        val result: Boolean = await(connector.updateProperyDetails(testClient.propertyNumber,testClient.postcode,testClient.crn))
+        result shouldBe true
+      }
 
       "bad request no client deleted" in {
         stubDelete(
@@ -116,19 +125,6 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         val result: Boolean = await(connector.deleteClient(crnTest))
 
         result shouldBe false
-      }
-    }
-
-    "update client" should {
-      "succesfully update a client" in {
-        stubPut(
-          url = UrlKeys.updateClient,
-          status = ACCEPTED,
-          responseBody = Json.stringify(testClientJson))
-
-        val result: Option[Client] = await(connector.login(testUser))
-
-        result shouldBe Some(testClient)
       }
     }
 
@@ -250,7 +246,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 
     "updateContactNumber" can{
       "succeed" in {
-        stubPut(
+        stubPatch(
           url = UrlKeys.updateContactNumber,
           status = 204,
           responseBody = "")
@@ -261,7 +257,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       }
 
       "fail" in {
-        stubPut(
+        stubPatch(
           url = UrlKeys.updateContactNumber,
           status = 500,
           responseBody = "")
@@ -270,8 +266,6 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 
         result shouldBe false
       }
-
-
     }
   }
 

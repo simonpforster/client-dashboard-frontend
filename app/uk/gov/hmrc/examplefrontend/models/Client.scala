@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.examplefrontend.models
 
-import play.api.data.Form
+
+import play.api.data.{Form, Forms}
 import play.api.data.Forms.{mapping, nonEmptyText}
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.examplefrontend.common.UserClientProperties
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, UserClientProperties}
 
 case class Client(crn: String,
                   name: String,
@@ -53,8 +54,8 @@ object UserPropertyForm {
   val submitForm: Form[UserProperty] =
     Form(
       mapping(
-        UserClientProperties.propertyNumber -> nonEmptyText,
-        UserClientProperties.postcode -> nonEmptyText
+        UserClientProperties.propertyNumber -> Forms.text.verifying(ErrorMessages.propertyNumberFormError, _.nonEmpty),
+        UserClientProperties.postcode -> Forms.text.verifying(ErrorMessages.postcodeFormError, _.isEmpty == false)
       )(UserProperty.apply)(UserProperty.unapply)
     )
 }

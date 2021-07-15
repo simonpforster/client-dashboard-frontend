@@ -20,8 +20,16 @@ object ErrorMessages {
   val pageTitle: String = "Something went wrong"
   val heading: String = "Something went wrong"
   val message: String = "Please come back later"
-
   val pageTitleUpdateContactNumber: String = "Something went wrong"
   val headingUpdateContactNumber: String = "Something went wrong, your contact number couldn't be updated"
   val messageUpdateContactNumber: String = "Please come back later"
+  val nameFormError: String = "Name must not be empty"
+  val businessNameFormError: String = "Business name must not be empty"
+  val contactNumberFormError: String = "Phone number must be 10 or more digits"
+  val propertyNumberFormError: String = "Property number must not be empty"
+  val postcodeFormError: String = "Postcode must not be empty"
+  val businessTypeFormError: String = "Please select one field"
+  val passwordFormError: String = "Password field must not be empty"
+  val passwordCheckFormError: String = "Password Match field must not be empty"
+  val passwordMatch: String = "Passwords do not match"
 }

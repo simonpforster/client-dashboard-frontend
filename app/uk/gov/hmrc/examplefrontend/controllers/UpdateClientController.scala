@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
-import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -26,7 +25,6 @@ import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Client, UserContactNumber, UserContactNumberForm, UserProperty, UserPropertyForm}
 import uk.gov.hmrc.examplefrontend.views.html.{UpdateClientPage, UpdateClientPropertyPage, UpdateContactNumber}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,7 +39,7 @@ class UpdateClientController @Inject()(
   extends FrontendController(mcc) with I18nSupport {
 
 
-  def OpenUpdateClientPage: Action[AnyContent] = Action async { implicit request =>
+  def openUpdateClientPage: Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
       dataConnector.readOne(request.session.get(SessionKeys.crn).get).map {
         case Some(client) => Ok(updateClientPage(client))
@@ -60,7 +58,7 @@ class UpdateClientController @Inject()(
     }
   }
 
-  def OpenUpdateClientProperty: Action[AnyContent] = Action(implicit request => {
+  def openUpdateClientProperty: Action[AnyContent] = Action(implicit request => {
     val form: Form[UserProperty] = request.session.get(SessionKeys.property).fold(
       UserPropertyForm.submitForm.fill(UserProperty("", ""))) { property =>
       UserPropertyForm.submitForm.fill(UserProperty.decode(property))
@@ -73,35 +71,14 @@ class UpdateClientController @Inject()(
       UserPropertyForm.submitForm.bindFromRequest().fold({ formWithErrors =>
         Future.successful(BadRequest(updateClientPropertyPage(formWithErrors)))
       }, { success =>
-        dataConnector.readOne(request.session.get(SessionKeys.crn).getOrElse("")).flatMap {
-          case Some(client) =>
-            val newClient = Client(
-              client.crn,
-              client.name,
-              client.businessName,
-              client.contactNumber,
-              success.propertyNumber,
-              success.postcode,
-              client.businessType
-            )
-            dataConnector.update(newClient).map {
-              case true => Redirect(routes.UpdateClientController.OpenUpdateClientPage())
-              case false => NotImplemented(error.standardErrorTemplate(
-                pageTitle = ErrorMessages.pageTitle,
-                heading = ErrorMessages.heading,
-                message = ErrorMessages.message))
-            }.recover {
-              case _ => NotFound(error.standardErrorTemplate(
-                pageTitle = ErrorMessages.pageTitle,
-                heading = ErrorMessages.heading,
-                message = ErrorMessages.message))
-            }
-          case None => Future.successful(NotFound(error.standardErrorTemplate(
+        dataConnector.updateProperyDetails(success.propertyNumber, success.postcode, request.session.get(SessionKeys.crn).get).map {
+          case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
+          case false => NotImplemented(error.standardErrorTemplate(
             pageTitle = ErrorMessages.pageTitle,
             heading = ErrorMessages.heading,
-            message = ErrorMessages.message)))
+            message = ErrorMessages.message))
         }.recover {
-          case _ => InternalServerError(error.standardErrorTemplate(
+          case _ => NotFound(error.standardErrorTemplate(
             pageTitle = ErrorMessages.pageTitle,
             heading = ErrorMessages.heading,
             message = ErrorMessages.message))
@@ -109,6 +86,7 @@ class UpdateClientController @Inject()(
       })
     } else {
       Future.successful(Redirect(routes.HomePageController.homepage()))
+
     }
   }
 
@@ -128,7 +106,7 @@ class UpdateClientController @Inject()(
         formWithErrors => Future.successful(BadRequest(updateContactNumberPage(formWithErrors, registeredClient))),
         success => {
           dataConnector.updateContactNumber(SessionKeys.crn, success.contact).map {
-            case true => Redirect(routes.UpdateClientController.OpenUpdateClientPage())
+            case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
             case false => NotImplemented(error.standardErrorTemplate(
                           pageTitle = ErrorMessages.pageTitleUpdateContactNumber,
                           heading = ErrorMessages.headingUpdateContactNumber,
