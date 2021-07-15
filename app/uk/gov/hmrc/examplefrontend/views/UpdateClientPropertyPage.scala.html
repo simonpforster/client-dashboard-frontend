@@ -2,11 +2,11 @@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@import uk.gov.hmrc.examplefrontend.models.{UserPropertyForm,UserProperty}
+@import uk.gov.hmrc.examplefrontend.models.{Client, UserPropertyForm,UserProperty}
 @this(layout: Layout,govukInput: GovukInput, govukErrorSummary: GovukErrorSummary)
-@(form: Form[UserProperty])(implicit request: Request[_], messages: Messages)
+@(form: Form[UserProperty], client: Client)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some("Enter Address")) {
+@layout(pageTitle = Some("Enter Address"), Some(client)) {
 
 <h1 class="govuk-heading-xl" id="Name Value">Enter Property number and address</h1>
 @if(form.errors.nonEmpty){

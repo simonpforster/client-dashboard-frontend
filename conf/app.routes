@@ -20,5 +20,10 @@ GET        /arn-submit              uk.gov.hmrc.examplefrontend.controllers.Dash
 GET        /arn-remove              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnRemove
 GET        /registration            uk.gov.hmrc.examplefrontend.controllers.HomePageController.registration
 +nocsrf
-POST      /modify-client/update-contact-number   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.submitUpdatedContactNumber
-GET       /modify-client/update-contact-number   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateContactNumber
+POST      /update-contact-number    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.submitUpdatedContactNumber
+GET       /update-contact-number    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateContactNumber
+
+GET        /update-business-type    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateBusinessType
++nocsrf
+POST       /update-business-type    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.submitBusinessTypeUpdate
+

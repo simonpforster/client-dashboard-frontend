@@ -96,7 +96,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
         result shouldBe Some(testClient)
       }
 
-      "update One client" in{
+      "update One client" in {
         stubPut(
           url = UrlKeys.updateClient,
           status = 201,
@@ -244,7 +244,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       }
     }
 
-    "updateContactNumber" can{
+    "updateContactNumber" can {
       "succeed" in {
         stubPatch(
           url = UrlKeys.updateContactNumber,
@@ -263,6 +263,30 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           responseBody = "")
 
         val result = await(connector.updateContactNumber(testClient.crn, testClient.contactNumber))
+
+        result shouldBe false
+      }
+    }
+
+    "updateBusinessType" can {
+      "succeed" in {
+        stubPatch(
+          url = UrlKeys.updateBusiness,
+          status = 204,
+          responseBody = "")
+
+        val result = await(connector.updateBusinessType(testClient.crn, testClient.businessType))
+
+        result shouldBe true
+      }
+
+      "fail" in {
+        stubPatch(
+          url = UrlKeys.updateBusiness,
+          status = 500,
+          responseBody = "")
+
+        val result = await(connector.updateBusinessType(testClient.crn, testClient.businessType))
 
         result shouldBe false
       }

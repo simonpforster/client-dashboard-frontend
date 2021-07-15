@@ -1,0 +1,66 @@
+@import uk.gov.hmrc.examplefrontend.models.{Client, UserBusinessType, UserBusinessTypeForm}
+@this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
+
+@(form: Form[UserBusinessType], client: Client)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = Some("Update Business Type"), Some(client)) {
+<h1 class="govuk-heading-xl">Update Business Type</h1>
+@if(form.errors.nonEmpty){
+
+<span id="passport-issued-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> Please select your business type:
+        </span>
+}
+
+<h2 class="govuk-heading-m" id="Name Value"> Please select one of the following business types below:</h2>
+
+@helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.submitBusinessTypeUpdate,'class -> "govuk-body"){
+<div class="govuk-form-group">
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            </legend>
+            <div class="govuk-radios">
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="business-sole-trader" name="businessType" type="radio"
+                           value="Sole Trader">
+                    <label class="govuk-label govuk-radios__label" for="business-sole-trader">
+                        Sole trader.
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="business-partnership" name="businessType" type="radio"
+                           value="Partnership">
+                    <label class="govuk-label govuk-radios__label" for="business-partnership">
+                        Partnership.
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="business-private-limited" name="businessType" type="radio"
+                           value="Private Limited">
+                    <label class="govuk-label govuk-radios__label" for="business-private-limited">
+                        Private Limited.
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="business-public-limited" name="businessType" type="radio"
+                           value="Public Limited">
+                    <label class="govuk-label govuk-radios__label" for="business-public-limited">
+                        Public Limited.
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>
+<button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
+}
+
+<hr>
+<div>
+    <a class="govuk-link" data-module="govuk-button"
+       href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.openUpdateClientPage">
+        Cancel
+    </a>
+</div>
+}
