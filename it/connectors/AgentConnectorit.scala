@@ -21,7 +21,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND}
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.common.UrlKeys
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
@@ -50,7 +50,7 @@ class AgentConnectorit extends AnyWordSpec with Matchers with GuiceOneAppPerSuit
       "succesfully check arn" in {
         stubPost(
           url = UrlKeys.readAgent,
-          status = 200,
+          status = OK,
           responseBody = "{}")
         val result: Boolean = await(connector.checkArn(testAgent))
         result shouldBe true

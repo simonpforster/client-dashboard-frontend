@@ -95,5 +95,4 @@ trait WireMockHelper {
           .withBody(responseBody)
       )
     )
-
 }

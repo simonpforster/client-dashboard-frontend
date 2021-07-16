@@ -68,7 +68,6 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
     } else {
       Redirect(routes.HomePageController.homepage())
     }
-
   }
 
   def deleteClientSuccessful(): Action[AnyContent] = Action { implicit request =>

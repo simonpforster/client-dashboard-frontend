@@ -17,14 +17,13 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.data.Form
-import play.api.http.Writeable.wByteArray
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models._
-import uk.gov.hmrc.examplefrontend.views.html.{UpdateBusinessTypePage, UpdateClientPage, UpdateClientPropertyPage, UpdateContactNumber, UpdateNamePage}
+import uk.gov.hmrc.examplefrontend.views.html._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -41,7 +40,6 @@ class UpdateClientController @Inject()(
                                         error: ErrorHandler,
                                         implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
-
 
   def openUpdateClientPage: Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
@@ -92,7 +90,6 @@ class UpdateClientController @Inject()(
       })
     } else {
       Future.successful(Redirect(routes.HomePageController.homepage()))
-
     }
   }
 

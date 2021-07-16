@@ -32,7 +32,6 @@ object Utils {
 			case None => Future(Redirect(routes.HomePageController.homepage()))
 		}
 	}
-
 //	def loggedInCheck(request: MessagesRequest[AnyContent],
 //										func:(String) => Result): Result = {
 //		request.session.get(SessionKeys.crn) match {

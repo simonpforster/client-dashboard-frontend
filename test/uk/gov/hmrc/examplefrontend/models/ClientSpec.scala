@@ -32,7 +32,7 @@ class ClientSpec extends AbstractTest {
     businessType = "testBusinessType",
     arn = Some("testArn"))
   val testARN: String = "testArn"
-  val userPropertyString:String = testClient.propertyNumber+"/"+testClient.postcode
+  val userPropertyString: String = testClient.propertyNumber + "/" + testClient.postcode
   val testClientJs: JsValue = Json.parse(
     s"""{
 				"${UserClientProperties.crn}": "${testClient.crn}",

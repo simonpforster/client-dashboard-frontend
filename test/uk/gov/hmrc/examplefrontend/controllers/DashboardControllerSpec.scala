@@ -18,6 +18,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -48,6 +49,8 @@ class DashboardControllerSpec extends AbstractTest {
     ec = executionContext
   )
 
+  val headerKey: String = "Content-Type"
+  val headerValues: String = "text/json"
   val agentFormField: String = "arn"
   val testCRN: String = "testCrn"
   val testName: String = "testName"
@@ -82,15 +85,13 @@ class DashboardControllerSpec extends AbstractTest {
   "DashboardController dashboardMain() GET " should {
     "return status Ok" in {
       val result: Future[Result] = testDashboardController.dashboardMain(fakeRequest)
-
       status(result) shouldBe Status.OK
-      contentType(result) shouldBe Some("text/html")
+      contentType(result) shouldBe Some(headerValues)
       contentAsString(result) should include("Dashboard")
     }
 
     "return status Redirect" in {
       val result: Future[Result] = testDashboardController.dashboardMain(fakeRequestWithoutSession)
-
       status(result) shouldBe Status.SEE_OTHER
     }
   }
@@ -102,7 +103,7 @@ class DashboardControllerSpec extends AbstractTest {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] =
           fakeRequestArnSubmitWithSession.withFormUrlEncodedBody(agentFormField -> testARN)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-        val doc = Jsoup.parse(contentAsString(result))
+        val doc: Document = Jsoup.parse(contentAsString(result))
         doc.title() shouldBe ErrorMessages.pageTitle
       }
       "future is unsuccessful at addArn" in {
@@ -111,7 +112,7 @@ class DashboardControllerSpec extends AbstractTest {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] =
           fakeRequestArnSubmitWithSession.withFormUrlEncodedBody(agentFormField -> testARN)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-        val doc = Jsoup.parse(contentAsString(result))
+        val doc: Document = Jsoup.parse(contentAsString(result))
         doc.title() shouldBe ErrorMessages.pageTitle
       }
     }
@@ -123,7 +124,6 @@ class DashboardControllerSpec extends AbstractTest {
         when(mockDataConnector.addArn(any(), any())) thenReturn Future(true)
         when(mockDataConnector.checkArn(any())) thenReturn Future(true)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-
         status(result) shouldBe OK
       }
     }
@@ -134,7 +134,6 @@ class DashboardControllerSpec extends AbstractTest {
           .withFormUrlEncodedBody(agentFormField -> "")
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithFormErrors
           .withSession(SessionKeys.crn -> testCRN))
-
         status(result) shouldBe BAD_REQUEST
         Jsoup.parse(contentAsString(result)).getElementById(agentFormField).`val` shouldBe ""
       }
@@ -147,7 +146,6 @@ class DashboardControllerSpec extends AbstractTest {
         when(mockDataConnector.checkArn(any())) thenReturn Future(true)
         when(mockDataConnector.addArn(any(), any())) thenReturn Future(false)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-
         status(result) shouldBe BAD_REQUEST
       }
     }
@@ -158,7 +156,6 @@ class DashboardControllerSpec extends AbstractTest {
           .withFormUrlEncodedBody(agentFormField -> testARN)
         when(mockDataConnector.checkArn(any())) thenReturn Future(false)
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestWithoutFormErrors)
-
         status(result) shouldBe NOT_FOUND
       }
     }
@@ -167,7 +164,6 @@ class DashboardControllerSpec extends AbstractTest {
       "session is empty(user is not logged in )" in {
         val result: Future[Result] = testDashboardController.arnSubmit(fakeRequestArnSubmit
           .withFormUrlEncodedBody(agentFormField -> testARN))
-
         status(result) shouldBe Status.SEE_OTHER
       }
     }
@@ -179,8 +175,8 @@ class DashboardControllerSpec extends AbstractTest {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession
           .withFormUrlEncodedBody(agentFormField -> testARN).withSession(SessionKeys.arn -> testARN)
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future.failed(new RuntimeException)
-        val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
-        val doc = Jsoup.parse(contentAsString(result))
+        val result: Future[Result] = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
+        val doc: Document = Jsoup.parse(contentAsString(result))
         doc.title() shouldBe ErrorMessages.pageTitle
       }
     }
@@ -189,15 +185,14 @@ class DashboardControllerSpec extends AbstractTest {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession
           .withFormUrlEncodedBody(agentFormField -> testARN).withSession(SessionKeys.arn -> testARN)
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(true)
-        val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
+        val result: Future[Result] = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
         status(result) shouldBe OK
       }
     }
 
     "return Redirect" should {
       "not have a crn in session(user not logged in)" in {
-        val result = testDashboardController.arnRemove(fakeRequestArnRemove)
-
+        val result: Future[Result] = testDashboardController.arnRemove(fakeRequestArnRemove)
         status(result) shouldBe Status.SEE_OTHER
       }
     }
@@ -206,15 +201,13 @@ class DashboardControllerSpec extends AbstractTest {
       "fail in the backend" in {
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(false)
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession.withFormUrlEncodedBody(agentFormField -> testARN).withSession(SessionKeys.arn -> testARN)
-        val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
-
+        val result: Future[Result] = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
         status(result) shouldBe BAD_REQUEST
       }
       "no arn in session" in {
         val fakeRequestWithoutFormErrors: FakeRequest[AnyContentAsFormUrlEncoded] = fakeRequestArnRemoveWithSession.withFormUrlEncodedBody(agentFormField -> testARN)
         when(mockDataConnector.removeArn(any(), any())) thenReturn Future(false)
-        val result = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
-
+        val result: Future[Result] = testDashboardController.arnRemove(fakeRequestWithoutFormErrors)
         status(result) shouldBe Status.NOT_FOUND
       }
     }

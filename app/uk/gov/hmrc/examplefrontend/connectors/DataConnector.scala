@@ -34,9 +34,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
   private def wspost(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).post(jsObject)
 
-  private def wsput(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
-    .addHttpHeaders(hdrsType -> hdrsValue).put(jsObject)
-
   private def wspatch(url: String, jsObject: JsObject): Future[WSResponse] = ws.url(UrlKeys.host + url)
     .addHttpHeaders(hdrsType -> hdrsValue).patch(jsObject)
 

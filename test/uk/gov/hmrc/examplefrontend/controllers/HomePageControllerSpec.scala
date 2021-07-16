@@ -17,6 +17,7 @@
 package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.http.Status
+import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
@@ -30,7 +31,8 @@ class HomePageControllerSpec extends AbstractTest {
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = UrlKeys.frontend)
-
+  val contentTypeMatch: String = "text/html"
+  val charsetMatch: String = "utf-8"
   private val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = UrlKeys.frontend)
@@ -45,27 +47,26 @@ class HomePageControllerSpec extends AbstractTest {
   "homepage() method" should {
     "return Ok" in {
       val result: Future[Result] = controller.homepage(fakeRequest)
-
-      status(result) shouldBe Status.OK
+      status(result) shouldBe OK
     }
 
     "return SEE_OTHER" in {
       val result: Future[Result] = controller.homepage(fakeRequestWithSession)
 
-      status(result) shouldBe Status.SEE_OTHER
+      status(result) shouldBe SEE_OTHER
     }
 
     "return HTML" in {
       val result: Future[Result] = controller.homepage(fakeRequest)
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
+      contentType(result) shouldBe Some(contentTypeMatch)
+      charset(result) shouldBe Some(charsetMatch)
     }
   }
 
   "registration() method" should {
     "return SEE_OTHER" in {
       val result: Future[Result] = controller.registration(fakeRequestReg)
-      status(result) shouldBe Status.SEE_OTHER
+      status(result) shouldBe SEE_OTHER
     }
   }
 }

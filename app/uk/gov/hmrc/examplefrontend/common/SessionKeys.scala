@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.examplefrontend.common
 
-import uk.gov.hmrc.examplefrontend.models.Client
-
 object SessionKeys {
 	val crn: String = "crn"
 	val name: String = "name"
