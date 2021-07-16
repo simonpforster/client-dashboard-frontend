@@ -20,7 +20,7 @@ import play.api.data.Form
 import uk.gov.hmrc.examplefrontend.views.html.DashboardPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm, Client}
@@ -81,8 +81,7 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
                 heading = ErrorMessages.heading,
                 message = ErrorMessages.message))
             }
-            case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors
-              .withError("arn", "no"))))
+            case false => Future.successful(NotFound(dashboardPage(client = clientOne, agentForm = formWithErrors)))
           }.recover {
             case _ => InternalServerError(error.standardErrorTemplate(
               pageTitle = ErrorMessages.pageTitle,

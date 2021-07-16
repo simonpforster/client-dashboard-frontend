@@ -17,8 +17,8 @@
 package uk.gov.hmrc.examplefrontend.models
 
 
+import play.api.data.Forms.mapping
 import play.api.data.{Form, Forms}
-import play.api.data.Forms.{mapping, nonEmptyText}
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, UserClientProperties}
 

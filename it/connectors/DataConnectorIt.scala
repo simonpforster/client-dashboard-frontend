@@ -21,9 +21,10 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT}
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, CREATED, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, NO_CONTENT, OK, UNAUTHORIZED}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.auth.otac.Unauthorised
 import uk.gov.hmrc.examplefrontend.common.UrlKeys
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, CRN, Client, User}
@@ -44,15 +45,15 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
   val testClientJson: JsValue = Json.toJson(testClient)
 
   val testUser: User = User(
-    crn = "testCrn",
+    crn = testClient.crn,
     password = "testPass")
 
   val testNewName: String = "testNewName"
-
-  lazy val crn: JsValue = Json.toJson(crnTest)
-  val testARN: Agent = Agent("testArn")
+  val testARN: Agent = Agent(
+    arn = "testArn")
   val crnTest: CRN = CRN(
     crn = "crnTest")
+  lazy val crn: JsValue = Json.toJson(crnTest)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -69,11 +70,9 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "succesfully delete a client" in {
         stubDelete(
           url = UrlKeys.deleteClient,
-          status = 204,
+          status = NO_CONTENT,
           responseBody = "")
-
         val result: Boolean = await(connector.deleteClient(crnTest))
-
         result shouldBe true
       }
 
@@ -82,18 +81,15 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           url = UrlKeys.deleteClient,
           status = NOT_FOUND,
           responseBody = "")
-
         val result: Boolean = await(connector.deleteClient(crnTest))
-
         result shouldBe false
       }
 
       "read One Client" in {
         stubGet(
           url = UrlKeys.readOneClient,
-          status = 200,
+          status = OK,
           responseBody = Json.stringify(testClientJson))
-
         val result: Option[Client] = await(connector.readOne(testClient.crn))
         result shouldBe Some(testClient)
       }
@@ -101,9 +97,8 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "update One client" in {
         stubPut(
           url = UrlKeys.updateClient,
-          status = 201,
+          status = CREATED,
           responseBody = Json.stringify(testClientJson))
-
         val result: Boolean = await(connector.update(testClient))
         result shouldBe true
       }
@@ -111,9 +106,8 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "update property information" in{
         stubPatch(
           url = UrlKeys.updateProperty,
-          status = 204,
+          status = NO_CONTENT,
           responseBody = Json.stringify(testClientJson))
-
         val result: Boolean = await(connector.updateProperyDetails(testClient.propertyNumber,testClient.postcode,testClient.crn))
         result shouldBe true
       }
@@ -123,9 +117,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           url = UrlKeys.deleteClient,
           status = BAD_REQUEST,
           responseBody = "")
-
         val result: Boolean = await(connector.deleteClient(crnTest))
-
         result shouldBe false
       }
     }
@@ -134,44 +126,36 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "succesfully receive a client" in {
         stubPost(
           url = UrlKeys.login,
-          status = 200,
+          status = OK,
           responseBody = Json.stringify(testClientJson))
-
         val result: Option[Client] = await(connector.login(testUser))
-
         result shouldBe Some(testClient)
       }
 
       "receive a bad client" in {
         stubPost(
           url = UrlKeys.login,
-          status = 200,
+          status = OK,
           responseBody = "{}")
-
         val result: Option[Client] = await(connector.login(testUser))
-
         result shouldBe None
       }
 
       "fail because of unauthorized" in {
         stubPost(
           url = UrlKeys.login,
-          status = 401,
+          status = UNAUTHORIZED,
           responseBody = Json.stringify(testClientJson))
-
         val result: Option[Client] = await(connector.login(testUser))
-
         result shouldBe None
       }
 
       "fail because of bad request" in {
         stubPost(
           url = UrlKeys.login,
-          status = 400,
+          status = BAD_REQUEST,
           responseBody = "")
-
         val result: Option[Client] = await(connector.login(testUser))
-
         result shouldBe None
       }
     }
@@ -180,18 +164,16 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "succeed" in {
         stubPatch(
           url = UrlKeys.addAgent,
-          status = 204,
+          status = NO_CONTENT,
           responseBody = "")
-
         val result: Boolean = await(connector.addArn(testClient, testARN))
-
         result shouldBe true
       }
 
       "fail because of not found" in {
         stubPatch(
           url = UrlKeys.addAgent,
-          status = 404,
+          status = NOT_FOUND,
           responseBody = "")
 
         val result: Boolean = await(connector.addArn(testClient, testARN))
@@ -202,11 +184,9 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "fail because of conflict" in {
         stubPatch(
           url = UrlKeys.addAgent,
-          status = 409,
+          status = CONFLICT,
           responseBody = "")
-
         val result: Boolean = await(connector.addArn(testClient, testARN))
-
         result shouldBe false
       }
     }
@@ -215,33 +195,27 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "succeed" in {
         stubPatch(
           url = UrlKeys.removeAgent,
-          status = 204,
+          status = NO_CONTENT,
           responseBody = "")
-
         val result: Boolean = await(connector.removeArn(testClient, testARN))
-
         result shouldBe true
       }
 
       "fail because of not found" in {
         stubPatch(
           url = UrlKeys.removeAgent,
-          status = 404,
+          status = NOT_FOUND,
           responseBody = "")
-
         val result: Boolean = await(connector.removeArn(testClient, testARN))
-
         result shouldBe false
       }
 
       "fail because of conflict" in {
         stubPatch(
           url = UrlKeys.removeAgent,
-          status = 409,
+          status = CONFLICT,
           responseBody = "")
-
         val result: Boolean = await(connector.removeArn(testClient, testARN))
-
         result shouldBe false
       }
     }
@@ -252,20 +226,16 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           url = UrlKeys.updateContactNumber,
           status = NO_CONTENT,
           responseBody = "")
-
         val result = await(connector.updateContactNumber(testClient.crn, testClient.contactNumber))
-
         result shouldBe true
       }
 
       "fail" in {
         stubPatch(
           url = UrlKeys.updateContactNumber,
-          status = 500,
+          status = INTERNAL_SERVER_ERROR,
           responseBody = "")
-
         val result = await(connector.updateContactNumber(testClient.crn, testClient.contactNumber))
-
         result shouldBe false
       }
     }
@@ -275,22 +245,18 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
       "succeed" in {
         stubPatch(
           url = UrlKeys.updateBusiness,
-          status = 204,
+          status = NO_CONTENT,
           responseBody = "")
-
         val result = await(connector.updateBusinessType(testClient.crn, testClient.businessType))
-
         result shouldBe true
       }
 
       "fail" in {
         stubPatch(
           url = UrlKeys.updateBusiness,
-          status = 500,
+          status = INTERNAL_SERVER_ERROR,
           responseBody = "")
-
         val result = await(connector.updateBusinessType(testClient.crn, testClient.businessType))
-
         result shouldBe false
       }
     }
@@ -301,23 +267,17 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
           url = UrlKeys.updateClientName,
           status = NO_CONTENT,
           responseBody = "")
-
         val result: Boolean = await(connector.updateClientName(testClient.crn, testNewName))
-
         result shouldBe true
       }
-
 
       "fail" in {
         stubPatch(
           url = UrlKeys.updateClientName,
-          status = 500,
+          status = INTERNAL_SERVER_ERROR,
           responseBody = "")
-
         val result = await(connector.updateClientName(testClient.crn, testNewName))
-
         result shouldBe false
-
       }
     }
   }
@@ -326,11 +286,9 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
     "fail because of teapot" in {
       stubPatch(
         url = UrlKeys.removeAgent,
-        status = 418,
+        status = IM_A_TEAPOT,
         responseBody = "")
-
       val result: Boolean = await(connector.removeArn(testClient, testARN))
-
       result shouldBe false
     }
   }

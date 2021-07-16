@@ -20,6 +20,8 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers{}
+trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers {
+
+}
 
 

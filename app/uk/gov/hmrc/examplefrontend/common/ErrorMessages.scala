@@ -24,6 +24,7 @@ object ErrorMessages {
   val headingUpdateContactNumber: String = "Something went wrong, your contact number couldn't be updated"
   val messageUpdateContactNumber: String = "Please come back later"
   val nameFormError: String = "Name must not be empty"
+  val agentFormError: String = "ARN must not be empty"
   val businessNameFormError: String = "Business name must not be empty"
   val contactNumberFormError: String = "Phone number must be 10 or more digits"
   val propertyNumberFormError: String = "Property number must not be empty"

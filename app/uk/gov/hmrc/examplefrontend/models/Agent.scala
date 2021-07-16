@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.examplefrontend.models
 
-import play.api.data.Form
+import play.api.data.{Form, Forms}
 import play.api.data.Forms.{mapping, nonEmptyText}
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, UserClientProperties}
 
 case class Agent(arn: String)
 
@@ -30,7 +31,7 @@ object AgentForm {
   val form: Form[Agent] =
     Form(
       mapping(
-        "arn" -> nonEmptyText
+        UserClientProperties.arn -> Forms.text.verifying(ErrorMessages.agentFormError, _.nonEmpty)
       )(Agent.apply)(Agent.unapply)
     )
 }

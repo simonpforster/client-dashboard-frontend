@@ -113,7 +113,6 @@ class DeleteControllerSpec extends AbstractTest {
         .withSession(SessionKeys.crn -> crn))
       status(result) shouldBe Status.BAD_GATEWAY
     }
-
   }
 
   "deleteClientSuccessful()" should {
