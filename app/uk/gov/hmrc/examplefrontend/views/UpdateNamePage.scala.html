@@ -8,16 +8,18 @@
 
 @layout(pageTitle = Some("Update Name")) {
 
-<a class="govuk-link" data-module="govuk-button"
-   href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.openUpdateClientPage">
-    Cancel
-</a>
+
+@if(form.errors.nonEmpty){
+
+@defining(form.errors.map { error =>
+ErrorLink(href = Some(s"#${error.key}"), content = Text(messages(error.message, error.args:_*)))}) { errorLinks =>
+@govukErrorSummary(ErrorSummary(
+errorList = errorLinks,
+title = Text(messages("Ensure your name is not empty"))))
+}
+}
 
 <h1 class="govuk-panel__title">Update Name</h1>
-
-<span id="passport-issued-error" class="govuk-error-message">
-    <span class="govuk-visually-hidden">Error:</span> Please enter full name
-</span>
         @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateNameSubmit,'class -> "govuk-body"){
         @if(form.errors("name").nonEmpty){
             @govukInput(Input(id = "name", name = "name", value = Some(form.data("name")), label = Label(content = Text("Full name:")),
@@ -30,5 +32,10 @@
                 content = Text("Full name:"))))
         }
         <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
+
+        <hr>
+        <a class="govuk-link" data-module="govuk-button" href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.openUpdateClientPage">
+            Cancel
+        </a>
     }
 }

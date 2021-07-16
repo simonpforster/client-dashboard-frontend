@@ -66,7 +66,7 @@ object UserBusinessTypeForm {
   val submitForm: Form[UserBusinessType] =
     Form(
       mapping(
-        UserClientProperties.businessType -> nonEmptyText,
+        UserClientProperties.businessType -> Forms.text.verifying(ErrorMessages.businessTypeFormError, _.nonEmpty),
       )(UserBusinessType.apply)(UserBusinessType.unapply)
     )
 }

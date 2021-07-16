@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.examplefrontend.models
 
-import play.api.data.Form
+import play.api.data.{Form, Forms}
 import play.api.data.Forms.{mapping, nonEmptyText}
-import uk.gov.hmrc.examplefrontend.common.UserClientProperties
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, UserClientProperties}
 
 case class User(crn: String,
                 password: String)
@@ -39,7 +39,7 @@ object UserNameForm {
   val submitForm: Form[UserName] =
     Form(
       mapping(
-        UserClientProperties.name -> nonEmptyText
+        UserClientProperties.name -> Forms.text.verifying(ErrorMessages.nameFormError, _.nonEmpty)
       )(UserName.apply)(UserName.unapply)
     )
 }
@@ -51,7 +51,7 @@ object UserContactNumberForm {
   val submitForm: Form[UserContactNumber] =
     Form(
       mapping(
-        UserClientProperties.contactNumber -> nonEmptyText(minLength = 10)
+        UserClientProperties.contactNumber -> Forms.text.verifying(ErrorMessages.contactNumberFormError, _.length >= 10)
       )(UserContactNumber.apply)(UserContactNumber.unapply)
     )
 }
