@@ -20,7 +20,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, when}
-import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
@@ -28,7 +27,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.Client
+import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,23 +39,14 @@ class LoginControllerSpec extends AbstractTest {
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
   implicit lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
 
-  val testClient: Client = Client(
-    crn = "testCrn",
-    name = "testName",
-    businessName = "testBusiness",
-    contactNumber = "testContact",
-    propertyNumber = "12",
-    postcode = "testPostcode",
-    businessType = "testBusinessType",
-    arn = Some("testArn"))
   val testPass: String = "12345"
   val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.clientLogin)
+    path = UrlKeys.login(testClient.crn))
 
   val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.clientLogin).withSession(SessionKeys.crn -> testClient.crn)
+    path = UrlKeys.login(testClient.crn)).withSession(SessionKeys.crn -> testClient.crn)
 
   val connector: DataConnector = mock(classOf[DataConnector])
   val controller: LoginController = new LoginController(

@@ -19,8 +19,20 @@ package uk.gov.hmrc.examplefrontend.helpers
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import uk.gov.hmrc.examplefrontend.models.Client
 
-trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers {
+trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers with GuiceOneAppPerSuite{
+
+  val testClient: Client = Client(
+    crn = "testCrn",
+    name = "testName",
+    businessName = "testBusiness",
+    contactNumber = "testContact",
+    propertyNumber = "12",
+    postcode = "testPostcode",
+    businessType = "testBusinessType",
+    arn = Some("testArn"))
 
 }
 

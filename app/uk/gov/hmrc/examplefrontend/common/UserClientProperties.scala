@@ -25,6 +25,5 @@ object UserClientProperties {
   val postcode: String = "postcode"
   val businessType: String = "businessType"
   val password: String = "password"
-  val arn: String = "clientArn"
-  val backendARN: String = "arn"
+  val arn: String = "arn"
 }

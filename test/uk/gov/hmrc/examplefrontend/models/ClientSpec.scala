@@ -21,16 +21,6 @@ import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 class ClientSpec extends AbstractTest {
-
-  val testClient: Client = Client(
-    crn = "testCrn",
-    name = "testName",
-    businessName = "testBusiness",
-    contactNumber = "testContact",
-    propertyNumber = "12",
-    postcode = "testPostcode",
-    businessType = "testBusinessType",
-    arn = Some("testArn"))
   val testARN: String = "testArn"
   val userPropertyString: String = testClient.propertyNumber + "/" + testClient.postcode
   val testClientJs: JsValue = Json.parse(
@@ -42,7 +32,7 @@ class ClientSpec extends AbstractTest {
 				"${UserClientProperties.propertyNumber}": "${testClient.propertyNumber}",
 				"${UserClientProperties.postcode}": "${testClient.postcode}",
 				"${UserClientProperties.businessType}": "${testClient.businessType}",
-				"${UserClientProperties.backendARN}": "$testARN"
+				"${UserClientProperties.arn}": "$testARN"
 			}""".stripMargin)
 
   val testClientJsNone: JsValue = Json.parse(
@@ -64,6 +54,18 @@ class ClientSpec extends AbstractTest {
 
       "succeed without ARN" in {
         Json.toJson(testClient.copy(arn = None)) shouldBe testClientJsNone
+      }
+    }
+
+    "encode" should {
+      "turns two strings into one" in{
+        UserProperty(testClient.propertyNumber,testClient.postcode).encode() shouldBe userPropertyString
+      }
+    }
+    "decode" should {
+      "turns one strings into two" in{
+        UserProperty.decode(userPropertyString).propertyNumber shouldBe testClient.propertyNumber
+        UserProperty.decode(userPropertyString).postcode shouldBe testClient.postcode
       }
     }
 

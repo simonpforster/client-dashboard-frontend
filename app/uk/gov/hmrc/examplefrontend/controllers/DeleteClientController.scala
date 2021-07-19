@@ -21,7 +21,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{CRN, Client}
+import uk.gov.hmrc.examplefrontend.models.Client
 import uk.gov.hmrc.examplefrontend.views.html.{DeleteAreYouSure, DeleteSuccess}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -39,8 +39,7 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
   def deleteClient(): Action[AnyContent] = Action async { implicit request =>
     request.session.get(SessionKeys.crn) match {
       case Some(value) =>
-        val crn = CRN(value)
-        val response: Future[Boolean] = dataConnector.deleteClient(crn)
+        val response: Future[Boolean] = dataConnector.deleteClient(value)
         response.map {
           case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
           case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
@@ -54,19 +53,22 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
     }
   }
 
-  def areYouSure(): Action[AnyContent] = Action { implicit request =>
+  def areYouSure(): Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {
-      val clientOne = Client(request.session.get(SessionKeys.crn).getOrElse(""),
-        request.session.get(SessionKeys.name).getOrElse(""),
-        request.session.get(SessionKeys.businessName).getOrElse(""),
-        request.session.get(SessionKeys.contactNumber).getOrElse(""),
-        request.session.get(SessionKeys.propertyNumber).getOrElse(""),
-        request.session.get(SessionKeys.postcode).getOrElse(""),
-        request.session.get(SessionKeys.businessType).getOrElse(""),
-        request.session.get(SessionKeys.arn))
-      Ok(deleteAreYouSure(clientOne))
+      dataConnector.readOne(request.session.get(SessionKeys.crn).get).map {
+        case Some(client) => Ok(deleteAreYouSure(client))
+        case _ => BadRequest(error.standardErrorTemplate(
+          pageTitle = ErrorMessages.pageTitle,
+          heading = ErrorMessages.heading,
+          message = ErrorMessages.message))
+      }.recover {
+        case _ => InternalServerError(error.standardErrorTemplate(
+          pageTitle = ErrorMessages.pageTitle,
+          heading = ErrorMessages.heading,
+          message = ErrorMessages.message))
+      }
     } else {
-      Redirect(routes.HomePageController.homepage())
+      Future.successful(Redirect(routes.HomePageController.homepage()))
     }
   }
 
