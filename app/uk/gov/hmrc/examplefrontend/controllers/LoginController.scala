@@ -63,20 +63,7 @@ class LoginController @Inject()(
       }, success => {
         dataConnector.login(success).map {
           case Some(client) =>
-            val call = Redirect(UrlKeys.dashboard).withSession(request.session
-              + (SessionKeys.crn -> client.crn)
-              + (SessionKeys.name -> client.name)
-              + (SessionKeys.businessName -> client.businessName)
-              + (SessionKeys.contactNumber -> client.contactNumber)
-              + (SessionKeys.propertyNumber -> client.propertyNumber)
-              + (SessionKeys.postcode -> client.postcode)
-              + (SessionKeys.businessType -> client.businessType)
-            )
-            client.arn match {
-              case Some(arn) => call.withSession(call.session + (SessionKeys.arn -> arn))
-              case None => call
-            }
-
+            Redirect(routes.DashboardController.dashboardMain()).withNewSession.withSession(SessionKeys.crn -> client.crn)
           case None => Unauthorized(loginPage(UserForm.form.fill(User("", ""))))
         }.recover {
           case _ => InternalServerError(error.standardErrorTemplate(

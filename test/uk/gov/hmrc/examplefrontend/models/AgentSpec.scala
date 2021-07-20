@@ -25,7 +25,7 @@ class AgentSpec extends AbstractTest {
   val agentModel: Agent = Agent(arn = "ANAGENT")
   val agentJs: JsValue = Json.parse(
     s"""{
-      "${UserClientProperties.backendARN}": "${agentModel.arn}"
+      "${UserClientProperties.arn}": "${agentModel.arn}"
       }""".stripMargin
   )
   "Agent" can {

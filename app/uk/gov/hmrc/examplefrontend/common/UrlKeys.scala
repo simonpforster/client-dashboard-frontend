@@ -17,27 +17,26 @@
 package uk.gov.hmrc.examplefrontend.common
 
 object UrlKeys {
+  val agents: String = "/agents/"
+  val clients: String = "/clients/"
   val host: String = "http://localhost:9006"
   val agentHost: String = "http://localhost:9009"
   val registrationNI: String = "http://localhost:9007/client-registration/name-input"
-  val frontend: String = "/example-frontend"
-  val dashboard: String = "/client/dashboard"
-  val clientRegistration: String = "/client/registration"
-  val deleteClient: String = "/delete-client"
-  val deleteSelect: String = "/example-frontend/delete-select"
-  val addAgent: String = "/add-agent"
-  val readAgent: String = "/readAgent"
-  val removeAgent: String = "/remove-agent"
-  val arnSumbit: String = "/arn-submit"
-  val login: String = "/login"
-  val clientLogin: String = "/client/login"
-  val modifyClient:String ="/modify-client"
-  val updateContactNumber:String ="/update-contact-number"
-  val updateClient:String = "/update-client"
-  val readOneClient:String = "/read"
-  val updateProperty:String = "/update-property"
-  val modifyClientProperty:String = "/modify-client-property"
-
-  val updateBusiness: String = "/update-business"
-  val updateClientName: String = "/update-name"
+  //Client - routes
+  val dashboard: String = "dashboard"
+  val modifyClient:String = "modify-client"
+  //Client backend - routes
+  def readOneClient(crn:String): String = clients + crn
+  //Add & remove agent - routes
+  def addAgent(crn: String): String = clients + crn +"/add"
+  def removeAgent(crn: String): String = clients + crn +"/remove"
+  //Client - routes
+  def login(crn: String): String = clients + crn + "/login"
+  def deleteClient(crn: String): String = clients + crn
+  def readAgent(arn:String):String = agents + arn + "/details"
+  //Client update - routes
+  def updateClientName(crn: String): String = clients + crn + "/name"
+  def updateContactNumber(crn: String):String = clients + crn + "/contact-number"
+  def updateProperty(crn: String):String = clients + crn + "/property"
+  def updateBusiness(crn: String): String = clients + crn + "/business-type"
 }

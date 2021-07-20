@@ -22,6 +22,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
+import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.examplefrontend.common.UrlKeys
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
@@ -33,7 +34,10 @@ class AgentConnectorit extends AnyWordSpec with Matchers with GuiceOneAppPerSuit
 
   lazy val connector: DataConnector = app.injector.instanceOf[DataConnector]
   val testAgent: Agent = Agent(
-    arn = "testArn")
+    arn = "ARN766250F5")
+  val badAgent: Agent = Agent(
+    arn = "Fake"
+  )
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -48,24 +52,24 @@ class AgentConnectorit extends AnyWordSpec with Matchers with GuiceOneAppPerSuit
   "AgentConnector" can {
     "checkARN" should {
       "succesfully check arn" in {
-        stubPost(
-          url = UrlKeys.readAgent,
+        stubGet(
+          url = UrlKeys.readAgent(testAgent.arn),
           status = OK,
           responseBody = "{}")
         val result: Boolean = await(connector.checkArn(testAgent))
         result shouldBe true
       }
       "agent not found" in {
-        stubPost(
-          url = UrlKeys.readAgent,
+        stubGet(
+          url = UrlKeys.readAgent(testAgent.arn),
           status = NOT_FOUND,
           responseBody = "{}")
-        val result: Boolean = await(connector.checkArn(testAgent))
+        val result: Boolean = await(connector.checkArn(badAgent))
         result shouldBe false
       }
       "bad request" in {
-        stubPost(
-          url = UrlKeys.readAgent,
+        stubGet(
+          url = UrlKeys.readAgent(testAgent.arn),
           status = BAD_REQUEST,
           responseBody = "{}")
         val result: Boolean = await(connector.checkArn(testAgent))

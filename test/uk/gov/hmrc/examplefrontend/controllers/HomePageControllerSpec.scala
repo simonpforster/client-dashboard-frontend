@@ -22,6 +22,7 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
 import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys}
+import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 import scala.concurrent.Future
 
@@ -30,16 +31,16 @@ class HomePageControllerSpec extends AbstractTest {
   val testCRN = "test"
   private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.frontend)
+    path = UrlKeys.clients)
   val contentTypeMatch: String = "text/html"
   val charsetMatch: String = "utf-8"
   private val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.frontend)
+    path = UrlKeys.clients)
     .withSession(SessionKeys.crn -> testCRN)
   private val fakeRequestReg = FakeRequest(
     method = "GET",
-    path = UrlKeys.clientRegistration
+    path = UrlKeys.registrationNI
   )
 
   private val controller = app.injector.instanceOf[HomePageController]

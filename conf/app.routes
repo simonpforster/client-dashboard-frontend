@@ -16,7 +16,7 @@ POST       /login                   uk.gov.hmrc.examplefrontend.controllers.Logi
 GET        /assets/*file            controllers.Assets.versioned(path = "/public", file: Asset)
 GET        /dashboard               uk.gov.hmrc.examplefrontend.controllers.DashboardController.dashboardMain
 +nocsrf
-GET        /arn-submit              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnSubmit
+POST       /arn-submit              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnSubmit
 GET        /arn-remove              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnRemove
 GET        /registration            uk.gov.hmrc.examplefrontend.controllers.HomePageController.registration
 +nocsrf
