@@ -322,7 +322,7 @@ class UpdateClientControllerSpec extends AbstractTest {
   "submitBusinessTypeUpdate POST " should {
     "return status See_Other " when {
       "no session/crn exists " in {
-        val result: Future[Result] = testUpdateClientController.updateBusinessType(fakeRequestBusinessTypeWithoutSession)
+        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessTypeWithoutSession)
         status(result) shouldBe SEE_OTHER
       }
       "session/crn exists, form without errors and updateBusinessType connector returns true" in {
