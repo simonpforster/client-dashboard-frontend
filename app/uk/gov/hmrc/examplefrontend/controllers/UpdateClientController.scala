@@ -60,14 +60,11 @@ class UpdateClientController @Inject()(
     }
   }
 
-  def openUpdateClientProperty: Action[AnyContent] = Action(implicit request => {
-    val form: Form[UserProperty] = request.session.get(SessionKeys.property).fold(
-      UserPropertyForm.submitForm.fill(UserProperty("", ""))) { property =>
-      UserPropertyForm.submitForm.fill(UserProperty.decode(property))
-    }
+  def openUpdateClientProperty: Action[AnyContent] = Action { implicit request =>
+    val form: Form[UserProperty] = UserPropertyForm.submitForm.fill(UserProperty("", ""))
     val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
-    Ok(updateClientPropertyPage(form,registeredClient ))
-  })
+    Ok(updateClientPropertyPage(form, registeredClient))
+  }
 
   def updateClientPropertySubmit: Action[AnyContent] = Action async { implicit request =>
     if (request.session.get(SessionKeys.crn).isDefined) {

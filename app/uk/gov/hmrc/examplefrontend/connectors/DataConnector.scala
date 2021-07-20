@@ -67,14 +67,6 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
     }
   }
 
-  def update(client: Client): Future[Boolean] = {
-    ws.url(UrlKeys.host + UrlKeys.updateClientName(client.crn)).put(Json.toJson(client)).map(
-      _.status match {
-        case 201 => true
-        case 400 => false
-      })
-  }
-
   def login(user: User): Future[Option[Client]] = {
     val userCredentials: JsObject = Json.obj(
       UserClientProperties.crn -> user.crn,
