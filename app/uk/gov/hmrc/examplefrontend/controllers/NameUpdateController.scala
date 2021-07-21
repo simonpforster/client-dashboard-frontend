@@ -33,7 +33,8 @@ class NameUpdateController@Inject()(
                                      mcc: MessagesControllerComponents,
                                      nameUpdatePage: UpdateNamePage,
                                      dataConnector: DataConnector,
-                                     error: ErrorHandler)
+                                     error: ErrorHandler,
+                                     utils: Utils)
   extends FrontendController(mcc) with I18nSupport{
 
   def updateName(): Action[AnyContent] = Action { implicit request =>
@@ -45,11 +46,11 @@ class NameUpdateController@Inject()(
   }
 
   def updateNameSubmit(): Action[AnyContent] = Action.async { implicit request =>
-    Utils.loggedInCheckAsync(request, crn => {
+    utils.loggedInCheckAsync(client => {
       UserNameForm.submitForm.bindFromRequest.fold({ formWithErrors =>
         Future(BadRequest(nameUpdatePage(formWithErrors)))
       },{ success =>
-        dataConnector.updateClientName(crn, success.name).map {
+        dataConnector.updateClientName(client.crn, success.name).map {
           case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
           case false => ServiceUnavailable(error.standardErrorTemplate(
             pageTitle = ErrorMessages.pageTitle,

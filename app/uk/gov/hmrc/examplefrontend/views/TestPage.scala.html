@@ -1,0 +1,11 @@
+@import helper._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.examplefrontend.models.{UserName, UserNameForm}
+@this(layout: Layout)
+
+@()(implicit request: Request[_], messages: Messages)
+
+
+@layout(pageTitle = Some("Test Page")) {
+        <h1 class="govuk-panel__title">Test Page</h1>
+}
