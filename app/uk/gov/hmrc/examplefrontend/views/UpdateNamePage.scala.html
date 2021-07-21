@@ -20,7 +20,7 @@ title = Text(messages("Ensure your name is not empty"))))
 }
 
 <h1 class="govuk-panel__title">Update Name</h1>
-        @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updateNameSubmit,'class -> "govuk-body"){
+        @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.NameUpdateController.updateNameSubmit,'class -> "govuk-body"){
         @if(form.errors("name").nonEmpty){
             @govukInput(Input(id = "name", name = "name", value = Some(form.data("name")), label = Label(content = Text("Full name:")),
                 hint = Some(Hint(content = Text("Enter your full name, for example - 'John Smith'"))),

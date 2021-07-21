@@ -9,8 +9,8 @@ GET        /delete-select           uk.gov.hmrc.examplefrontend.controllers.Dele
 GET        /deleted-client          uk.gov.hmrc.examplefrontend.controllers.DeleteClientController.deleteClientSuccessful()
 GET        /modify-client           uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.openUpdateClientPage()
 +nocsrf
-POST      /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateClientPropertySubmit
-GET       /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.openUpdateClientProperty
+POST      /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.PropertyUpdateController.updateClientPropertySubmit
+GET       /modify-client-property   uk.gov.hmrc.examplefrontend.controllers.PropertyUpdateController.openUpdateClientProperty
 +nocsrf
 POST       /login                   uk.gov.hmrc.examplefrontend.controllers.LoginController.loginSubmit
 GET        /assets/*file            controllers.Assets.versioned(path = "/public", file: Asset)
@@ -20,13 +20,13 @@ POST       /arn-submit              uk.gov.hmrc.examplefrontend.controllers.Dash
 GET        /arn-remove              uk.gov.hmrc.examplefrontend.controllers.DashboardController.arnRemove
 GET        /registration            uk.gov.hmrc.examplefrontend.controllers.HomePageController.registration
 +nocsrf
-POST      /update-contact-number    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.submitUpdatedContactNumber
-GET       /update-contact-number    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateContactNumber
+POST      /update-contact-number    uk.gov.hmrc.examplefrontend.controllers.ContactNumberUpdateController.submitUpdatedContactNumber
+GET       /update-contact-number    uk.gov.hmrc.examplefrontend.controllers.ContactNumberUpdateController.updateContactNumber
 
-GET        /update-business-type    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateBusinessType
+GET        /update-business-type    uk.gov.hmrc.examplefrontend.controllers.BusinessTypeUpdateController.updateBusinessType
 +nocsrf
-POST       /update-business-type    uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.submitBusinessTypeUpdate
+POST       /update-business-type    uk.gov.hmrc.examplefrontend.controllers.BusinessTypeUpdateController.submitBusinessTypeUpdate
 
-GET        /update-client-name      uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateName
+GET        /update-client-name      uk.gov.hmrc.examplefrontend.controllers.NameUpdateController.updateName
 +nocsrf
-POST       /update-client-name uk.gov.hmrc.examplefrontend.controllers.UpdateClientController.updateNameSubmit
+POST       /update-client-name uk.gov.hmrc.examplefrontend.controllers.NameUpdateController.updateNameSubmit
