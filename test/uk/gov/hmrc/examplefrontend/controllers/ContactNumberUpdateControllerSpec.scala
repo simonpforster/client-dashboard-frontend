@@ -24,7 +24,7 @@ import play.api.http.Status.{INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, SEE_OTHER}
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties}
+import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
@@ -32,19 +32,22 @@ import uk.gov.hmrc.examplefrontend.views.html._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ContactNumberUpdateControllerSpec extends AbstractTest{
+class ContactNumberUpdateControllerSpec extends AbstractTest {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val updateContactNumber: UpdateContactNumber = app.injector.instanceOf[UpdateContactNumber]
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
-  lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
 
+  object utils extends Utils(mockDataConnector, error)
+
   object testUpdateClientController extends ContactNumberUpdateController(
-    mcc,
-    updateContactNumber,
-    mockDataConnector,
-    error,
-    executionContext
+    mcc = mcc,
+    updateContactNumberPage = updateContactNumber,
+    error = error,
+    dataConnector = mockDataConnector,
+    utils = utils,
+    ec = executionContext
   )
 
   val fakeRequestContactNumber: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
@@ -67,13 +70,6 @@ class ContactNumberUpdateControllerSpec extends AbstractTest{
         contentAsString(result) should include("Update Contact Number")
       }
     }
-
-    "return status SeeOther" when {
-      "session doesn't exists(user not logged in)" in {
-        val result: Future[Result] = testUpdateClientController.updateContactNumber().apply(fakeRequestContactNumber)
-        status(result) shouldBe SEE_OTHER
-      }
-    }
   }
 
   "submitUpdatedContactNumber() POST" should {
@@ -86,13 +82,6 @@ class ContactNumberUpdateControllerSpec extends AbstractTest{
       }
     }
 
-    "return status SeeOther" when {
-      "form with errors & without session(not logged in)" in {
-        val result: Future[Result] = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber)
-        status(result) shouldBe SEE_OTHER
-      }
-    }
-
     "return Internal server error" when {
       "update contact number fails" in {
         when(mockDataConnector.updateContactNumber(any(),any())) thenReturn Future.failed(new RuntimeException)
@@ -102,7 +91,6 @@ class ContactNumberUpdateControllerSpec extends AbstractTest{
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
     }
-
     "return status SeeOther" when {
       "form without errors & with session(logged in) & updateContactNumber connector returns true" in {
         when(mockDataConnector.updateContactNumber(any(), any())) thenReturn Future.successful(true)

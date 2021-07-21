@@ -18,9 +18,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
-import uk.gov.hmrc.examplefrontend.config.ErrorHandler
-import uk.gov.hmrc.examplefrontend.connectors.DataConnector
+import uk.gov.hmrc.examplefrontend.common.Utils
 import uk.gov.hmrc.examplefrontend.views.html._
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -30,27 +28,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class UpdateClientController @Inject()(
                                         mcc: MessagesControllerComponents,
                                         updateClientPage: UpdateClientPage,
-                                        dataConnector: DataConnector,
-                                        error: ErrorHandler,
+                                        utils: Utils,
                                         implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
   def openUpdateClientPage: Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      dataConnector.readOne(request.session.get(SessionKeys.crn).get).map {
-        case Some(client) => Ok(updateClientPage(client))
-        case _ => BadRequest(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message))
-      }.recover {
-        case _ => InternalServerError(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message))
-      }
-    } else {
-      Future.successful(Redirect(routes.HomePageController.homepage()))
-    }
+    utils.loggedInCheckAsync({ client =>
+      Future(Ok(updateClientPage(client)))
+    })
   }
 }

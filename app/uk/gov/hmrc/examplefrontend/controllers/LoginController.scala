@@ -19,7 +19,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
@@ -36,24 +36,19 @@ class LoginController @Inject()(
                                  dataConnector: DataConnector,
                                  logoutSuccessPage: LogoutSuccess,
                                  error: ErrorHandler,
+                                 utils: Utils,
                                  implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
-  def login: Action[AnyContent] = Action { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      Redirect(routes.DashboardController.dashboardMain())
-    } else {
-      val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
-      Ok(loginPage(form))
-    }
+  def login: Action[AnyContent] = Action async { implicit request =>
+    val form: Form[User] = UserForm.form.fill(User(crn = "", password = ""))
+    utils.notLoggedInCheck(request, _ => Future(Ok(loginPage(form))))
   }
 
-  def logOut: Action[AnyContent] = Action { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      Ok(logoutSuccessPage()).withNewSession
-    } else {
-      Redirect(routes.HomePageController.homepage())
-    }
+  def logOut: Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckNoClient(request, _ =>
+      Future(Ok(logoutSuccessPage()).withNewSession)
+    )
   }
 
   def loginSubmit: Action[AnyContent] = Action.async { implicit request =>

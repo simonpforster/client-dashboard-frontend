@@ -23,7 +23,7 @@ import org.mockito.Mockito.{mock, when}
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys, UserClientProperties}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys, UserClientProperties, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
@@ -37,6 +37,9 @@ class LoginControllerSpec extends AbstractTest {
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
   implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
   implicit lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  implicit lazy val utils: Utils = app.injector.instanceOf[Utils]
+  val testPass: String = "12345"
+
   val connector: DataConnector = mock(classOf[DataConnector])
 
   val controller: LoginController = new LoginController(
@@ -45,6 +48,7 @@ class LoginControllerSpec extends AbstractTest {
     dataConnector = connector,
     logoutSuccessPage = logoutSuccess,
     error = error,
+    utils = utils,
     ec = executionContext)
 
   val fakeRequestLogin: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(

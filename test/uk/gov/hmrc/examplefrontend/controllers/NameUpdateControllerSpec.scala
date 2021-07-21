@@ -41,13 +41,13 @@ class NameUpdateControllerSpec extends AbstractTest {
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
   lazy val updateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
 
-object testNameUpdateController extends NameUpdateController(
-  mcc = mcc,
-  nameUpdatePage = nameUpdatePage,
-  error = error,
-  dataConnector = mockDataConnector,
-  utils = utils
-)
+  object testNameUpdateController extends NameUpdateController(
+    mcc = mcc,
+    nameUpdatePage = nameUpdatePage,
+    error = error,
+    dataConnector = mockDataConnector,
+    utils = utils
+  )
 
   val newName = "updatedClientName"
   val fakeRequestClientName: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
@@ -62,15 +62,10 @@ object testNameUpdateController extends NameUpdateController(
   "nameUpdate()" can {
     "successfully run" should {
       "return OK if crn in session" in {
+        when(mockDataConnector.readOne(any())).thenReturn(Future.successful(Some(testClient)))
         val result: Future[Result] = testNameUpdateController.updateName().apply(fakeRequestClientName
           .withSession(SessionKeys.crn -> testClient.crn))
-        when(mockDataConnector.readOne(any())).thenReturn(Future.successful(Some(testClient)))
         status(result) shouldBe OK
-      }
-
-      "redirect login if no crn in session" in {
-        val result: Future[Result] = testNameUpdateController.updateName().apply(fakeRequestClientName)
-        status(result) shouldBe SEE_OTHER
       }
     }
   }
