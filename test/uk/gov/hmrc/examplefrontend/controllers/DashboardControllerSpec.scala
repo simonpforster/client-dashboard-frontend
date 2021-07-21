@@ -51,15 +51,15 @@ class DashboardControllerSpec extends AbstractTest {
 
   val fakeRequestDashboard: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.dashboard)
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.dashboard)
 
   val fakeRequestArnSubmit: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "POST",
-    path = UrlKeys.addAgent(testClient.crn))
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.arnSubmit)
 
   val fakeRequestArnRemove: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.removeAgent(testClient.crn))
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.arnRemove)
 
   "DashboardController dashboardMain() GET " should {
     "return status Ok" in {

@@ -28,11 +28,10 @@ import scala.concurrent.Future
 class HomePageControllerSpec extends AbstractTest {
 
   private val controller = app.injector.instanceOf[HomePageController]
-
   private val fakeRequestHomepage: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.clients)
-
+    path = UrlKeys.host + UrlKeys.client
+  )
   private val fakeRequestReg = FakeRequest(
     method = "GET",
     path = UrlKeys.registrationNI
