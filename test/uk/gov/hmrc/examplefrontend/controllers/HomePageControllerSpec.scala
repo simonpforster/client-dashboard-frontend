@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.examplefrontend.controllers
 
-import play.api.http.Status
 import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
@@ -28,37 +27,31 @@ import scala.concurrent.Future
 
 class HomePageControllerSpec extends AbstractTest {
 
-  val testCRN = "test"
-  private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+  private val controller = app.injector.instanceOf[HomePageController]
+
+  private val fakeRequestHomepage: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
     path = UrlKeys.clients)
-  val contentTypeMatch: String = "text/html"
-  val charsetMatch: String = "utf-8"
-  private val fakeRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
-    method = "GET",
-    path = UrlKeys.clients)
-    .withSession(SessionKeys.crn -> testCRN)
+
   private val fakeRequestReg = FakeRequest(
     method = "GET",
     path = UrlKeys.registrationNI
   )
 
-  private val controller = app.injector.instanceOf[HomePageController]
-
   "homepage() method" should {
     "return Ok" in {
-      val result: Future[Result] = controller.homepage(fakeRequest)
+      val result: Future[Result] = controller.homepage(fakeRequestHomepage)
       status(result) shouldBe OK
     }
 
     "return SEE_OTHER" in {
-      val result: Future[Result] = controller.homepage(fakeRequestWithSession)
+      val result: Future[Result] = controller.homepage(fakeRequestHomepage.withSession(SessionKeys.crn -> testCRN))
 
       status(result) shouldBe SEE_OTHER
     }
 
     "return HTML" in {
-      val result: Future[Result] = controller.homepage(fakeRequest)
+      val result: Future[Result] = controller.homepage(fakeRequestHomepage)
       contentType(result) shouldBe Some(contentTypeMatch)
       charset(result) shouldBe Some(charsetMatch)
     }
