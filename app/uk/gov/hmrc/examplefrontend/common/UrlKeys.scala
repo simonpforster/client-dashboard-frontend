@@ -17,26 +17,45 @@
 package uk.gov.hmrc.examplefrontend.common
 
 object UrlKeys {
-  val agents: String = "/agents/"
+
   val clients: String = "/clients/"
   val host: String = "http://localhost:9006"
   val agentHost: String = "http://localhost:9009"
   val registrationNI: String = "http://localhost:9007/client-registration/name-input"
+
+
   //Client - routes
+  val client = "/client/"
+
+  val registration: String = "registration"
+  val login: String = "login"
+  val logOut: String = "successful-logout"
   val dashboard: String = "dashboard"
-  val modifyClient:String = "modify-client"
-  //Client backend - routes
+  val arnRemove: String = "arn-remove "
+  val arnSubmit: String = "arn-remove "
+  val deleteClient: String = "delete-user "
+  val areYouSure: String = "delete-select "
+  val deleteClientSuccessful: String = "deleted-client"
+  val modifyClient: String = "modify-client"
+  val updateClientPage: String = "modify-client-property"
+  val updateClientName: String = "update-client-name"
+  val updateContactNumber: String = "update-contact-number"
+  val updateProperty: String = "modify-client-property"
+  val updateBusiness: String = "update-business-type"
+
+
+  //Clients backend - routes
   def readOneClient(crn:String): String = clients + crn
-  //Add & remove agent - routes
   def addAgent(crn: String): String = clients + crn +"/add"
   def removeAgent(crn: String): String = clients + crn +"/remove"
-  //Client - routes
   def login(crn: String): String = clients + crn + "/login"
   def deleteClient(crn: String): String = clients + crn
-  def readAgent(arn:String):String = agents + arn + "/details"
-  //Client update - routes
   def updateClientName(crn: String): String = clients + crn + "/name"
   def updateContactNumber(crn: String):String = clients + crn + "/contact-number"
   def updateProperty(crn: String):String = clients + crn + "/property"
   def updateBusiness(crn: String): String = clients + crn + "/business-type"
+
+  //Agents backend - routes
+  val agents: String = "/agents/"
+  def readAgent(arn:String):String = agents + arn + "/details"
 }

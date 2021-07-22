@@ -36,32 +36,32 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val updateBusinessTypePage: UpdateBusinessTypePage = app.injector.instanceOf[UpdateBusinessTypePage]
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
-  val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
-  lazy val updateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
 
   object testUpdateClientController extends BusinessTypeUpdateController(
-    mcc = mcc,
-    updateBusinessTypePage= updateBusinessTypePage,
-    error = error,
-    dataConnector = mockDataConnector,
-    ec = executionContext
+    mcc,
+    updateBusinessTypePage,
+    mockDataConnector,
+    error,
+    executionContext
   )
 
   val fakeRequestBusinessType: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.updateBusiness(testClient.crn)
-  ).withSession(SessionKeys.crn -> testClient.crn)
-  val fakeRequestBusinessTypeWithoutSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
-    method = "GET",
-    path = UrlKeys.updateBusiness(testClient.crn)
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.updateBusiness
+  )
+  val fakeRequestSubmitBusinessType: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "POST",
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.updateBusiness
   )
 
   "updateBusinessType GET " should {
     "return status Ok " when {
       "session/crn exists " in {
         when(mockDataConnector.readOne(any())) thenReturn Future.successful(Some(testClient))
-        val result = testUpdateClientController.updateBusinessType()(fakeRequestBusinessType)
+        val result = testUpdateClientController.updateBusinessType().apply(fakeRequestBusinessType
+          .withSession(SessionKeys.crn -> testClient.crn))
         status(result) shouldBe Status.OK
         contentType(result) shouldBe Some("text/html")
         contentAsString(result) should include("Update Business Type")
@@ -70,7 +70,7 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
 
     "returns status See_Other " when {
       "no session/crn exists " in {
-        val result: Future[Result] = testUpdateClientController.updateBusinessType()(fakeRequestBusinessTypeWithoutSession)
+        val result: Future[Result] = testUpdateClientController.updateBusinessType().apply(fakeRequestBusinessType)
         status(result) shouldBe SEE_OTHER
       }
     }
@@ -79,32 +79,40 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
   "submitBusinessTypeUpdate POST " should {
     "return status See_Other " when {
       "no session/crn exists " in {
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessTypeWithoutSession)
+        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType)
         status(result) shouldBe SEE_OTHER
       }
       "session/crn exists, form without errors and updateBusinessType connector returns true" in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.successful(true)
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessType.withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
+        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+          .withSession(SessionKeys.crn -> testClient.crn)
+          .withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
         status(result) shouldBe SEE_OTHER
       }
     }
     "return status NotImplemented" when {
       "session/crn exists, form without errors and updateBusinessType connector returns false " in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.successful(false)
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessType.withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
+        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+          .withSession(SessionKeys.crn -> testClient.crn)
+          .withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
         status(result) shouldBe NOT_IMPLEMENTED
       }
     }
     "return status InternalServerError" when {
       "session/crn exists, form without errors and updateBusinessType connector fails " in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.failed(new RuntimeException)
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessType.withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
+        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+          .withSession(SessionKeys.crn -> testClient.crn)
+          .withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
     }
     "return status BadRequest " when {
       "session/crn exists and there are form with errors " in {
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestBusinessType.withFormUrlEncodedBody(UserClientProperties.businessType -> ""))
+        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+          .withSession(SessionKeys.crn -> testClient.crn)
+          .withFormUrlEncodedBody(UserClientProperties.businessType -> ""))
         status(result) shouldBe BAD_REQUEST
       }
     }
