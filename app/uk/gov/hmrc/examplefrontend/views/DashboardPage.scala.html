@@ -20,11 +20,12 @@
     </div>
 
     }else {
+        <p id="arn-label" class="govuk-body"> When you are connected with an agent, it will be displayed here. Currently you are not connected with any agent. To connect with your agent, please enter their reference number below. <br> This number is provided to you by your agent. </p>
         @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.arnSubmit(), 'class -> "govuk-body") {
             @if(agentForm.errors("arn").nonEmpty) {
-                @govukInput(Input(id = "arn", name = "arn",value = Some(agentForm.data("arn")), label = Label(content = Text("Enter ARN:")), hint = Some(Hint(content = Text("The ARN. For example, ARNNUMBER."))), errorMessage = Some(ErrorMessage(content = Text("Enter the ARN")))))
+                    @govukInput(Input(id = "arn", name = "arn",value = Some(agentForm.data("arn")), label = Label(content = Text("Enter a Agent Reference Number(ARN)")), hint = Some(Hint(content = Text("For example, ARNNUMBER. This is up to 11 characters long starting with 'ARN'"))), errorMessage = Some(ErrorMessage(content = Text("Please enter an Agent Reference Number")))))
             }else{
-                @govukInput(Input(id="arn",name = "arn",value = Some(agentForm.data("arn")),label = Label(isPageHeading = true,content = Text("Enter ARN:"))))
+                @govukInput(Input(id="arn",name = "arn",value = Some(agentForm.data("arn")),label = Label(isPageHeading = true,content = Text("Enter a Agent Reference Number(ARN)")), hint = Some(Hint(content = Text("For example, ARNNUMBER. This is up to 11 characters long starting with 'ARN'")))))
             }
                 <button class="govuk-button" data-module="govuk-button" type="submit" id="submit">Add</button>
     }
