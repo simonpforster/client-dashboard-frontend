@@ -62,7 +62,7 @@ class PropertyUpdateControllerSpec extends AbstractTest {
   "Update Client Property GET" should {
     "return status OK" in {
       when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
-      val result: Future[Result] = testUpdateClientController.openUpdateClientProperty.apply(fakeRequestProperty
+      val result: Future[Result] = testUpdateClientController.updateProperty.apply(fakeRequestProperty
         .withSession(SessionKeys.crn -> testClient.crn))
       status(result) shouldBe OK
       contentType(result) shouldBe Some(contentTypeMatch)
@@ -73,7 +73,7 @@ class PropertyUpdateControllerSpec extends AbstractTest {
     "return status Redirect" when {
       "information when everything passes" in {
         when(mockDataConnector.updateProperyDetails(any(), any(), any())) thenReturn Future.successful(true)
-        val result: Future[Result] = testUpdateClientController.updateClientPropertySubmit().apply(fakeRequestSubmitProperty
+        val result: Future[Result] = testUpdateClientController.updatePropertySubmit().apply(fakeRequestSubmitProperty
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.propertyNumber -> testClient.propertyNumber, UserClientProperties.postcode -> testClient.postcode))
         status(result) shouldBe SEE_OTHER
@@ -81,7 +81,7 @@ class PropertyUpdateControllerSpec extends AbstractTest {
     }
     "return form with errors" when {
       "no information is present in form" in {
-        val result: Future[Result] = testUpdateClientController.updateClientPropertySubmit().apply(fakeRequestSubmitProperty
+        val result: Future[Result] = testUpdateClientController.updatePropertySubmit().apply(fakeRequestSubmitProperty
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.propertyNumber -> "", UserClientProperties.postcode -> ""))
         status(result) shouldBe BAD_REQUEST
@@ -90,7 +90,7 @@ class PropertyUpdateControllerSpec extends AbstractTest {
     "return status Not Implemented" when {
       "update returns false" in {
         when(mockDataConnector.updateProperyDetails(any(), any(), any())) thenReturn Future.successful(false)
-        val result: Future[Result] = testUpdateClientController.updateClientPropertySubmit().apply(fakeRequestSubmitProperty
+        val result: Future[Result] = testUpdateClientController.updatePropertySubmit().apply(fakeRequestSubmitProperty
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.propertyNumber -> testClient.propertyNumber, UserClientProperties.postcode -> testClient.postcode))
         status(result) shouldBe NOT_IMPLEMENTED
@@ -99,7 +99,7 @@ class PropertyUpdateControllerSpec extends AbstractTest {
     "return status Not Found" when {
       "update fails" in {
         when(mockDataConnector.updateProperyDetails(any(), any(), any())) thenReturn Future.failed(new RuntimeException)
-        val result: Future[Result] = testUpdateClientController.updateClientPropertySubmit().apply(fakeRequestSubmitProperty
+        val result: Future[Result] = testUpdateClientController.updatePropertySubmit().apply(fakeRequestSubmitProperty
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.propertyNumber -> testClient.propertyNumber, UserClientProperties.postcode -> testClient.postcode))
         status(result) shouldBe NOT_FOUND

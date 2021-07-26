@@ -44,13 +44,13 @@ class ContactNumberUpdateController @Inject()(
     })
   }
 
-  def submitUpdatedContactNumber: Action[AnyContent] = Action async { implicit request =>
+  def updateContactNumberSubmit: Action[AnyContent] = Action async { implicit request =>
     utils.loggedInCheckAsync({ client =>
       UserContactNumberForm.submitForm.bindFromRequest().fold(
         formWithErrors => Future.successful(BadRequest(updateContactNumberPage(formWithErrors, client))),
         success => {
           dataConnector.updateContactNumber(request.session.get(SessionKeys.crn).get, success.contact).map {
-            case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
+            case true => Redirect(routes.UpdateClientController.updatePage())
             case false => NotImplemented(error.standardErrorTemplate(
               pageTitle = ErrorMessages.pageTitleUpdateContactNumber,
               heading = ErrorMessages.headingUpdateContactNumber,

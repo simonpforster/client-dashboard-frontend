@@ -83,7 +83,7 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
     "return status See_Other " when {
       "session/crn exists, form without errors and updateBusinessType connector returns true" in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.successful(true)
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+        val result: Future[Result] = testUpdateClientController.updateBusinessTypeSubmit(fakeRequestSubmitBusinessType
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
         status(result) shouldBe SEE_OTHER
@@ -92,7 +92,7 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
     "return status NotImplemented" when {
       "session/crn exists, form without errors and updateBusinessType connector returns false " in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.successful(false)
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+        val result: Future[Result] = testUpdateClientController.updateBusinessTypeSubmit(fakeRequestSubmitBusinessType
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
         status(result) shouldBe NOT_IMPLEMENTED
@@ -101,7 +101,7 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
     "return status InternalServerError" when {
       "session/crn exists, form without errors and updateBusinessType connector fails " in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.failed(new RuntimeException)
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+        val result: Future[Result] = testUpdateClientController.updateBusinessTypeSubmit(fakeRequestSubmitBusinessType
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.businessType -> testClient.businessType))
         status(result) shouldBe INTERNAL_SERVER_ERROR
@@ -109,7 +109,7 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
     }
     "return status BadRequest " when {
       "session/crn exists and there are form with errors " in {
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType
+        val result: Future[Result] = testUpdateClientController.updateBusinessTypeSubmit(fakeRequestSubmitBusinessType
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.businessType -> ""))
         status(result) shouldBe BAD_REQUEST

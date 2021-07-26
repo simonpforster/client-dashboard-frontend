@@ -18,7 +18,7 @@ title = Text(messages("Ensure both fields are completed"))))
     }
 }
 
-@helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.PropertyUpdateController.updateClientPropertySubmit,'class -> "govuk-body"){
+@helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.PropertyUpdateController.updatePropertySubmit,'class -> "govuk-body"){
 @if(form.errors("propertyNumber").nonEmpty){
 @govukInput(Input(id = "property-number", name = "propertyNumber", value = Some(form.data("propertyNumber")), label = Label(content = Text("Property Number:")), hint = Some(Hint(content = Text("The house number you live at, for example - '103b'"))), errorMessage = Some(ErrorMessage(content = Text("Please provide a valid house number")))))
 }else{
@@ -32,7 +32,7 @@ title = Text(messages("Ensure both fields are completed"))))
 <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
 
 <hr>
-<a class="govuk-link" data-module="govuk-button" href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.openUpdateClientPage()">
+<a class="govuk-link" data-module="govuk-button" href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updatePage()">
     Cancel
 </a>
 }

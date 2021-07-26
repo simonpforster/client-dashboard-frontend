@@ -19,7 +19,7 @@
       }
     }
 
-  @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.ContactNumberUpdateController.submitUpdatedContactNumber){
+  @helper.form(action = uk.gov.hmrc.examplefrontend.controllers.routes.ContactNumberUpdateController.updateContactNumberSubmit){
     @if(form.errors("contactNumber").nonEmpty){
         @govukInput(Input(id = "contact-number",inputType = "number", name = "contactNumber", value = Some(form.data("contactNumber")), label = Label(content = Text("Contact Number:")), hint = Some(Hint(content = Text("The phone number you prefer to be contacted on, for example - '01615555555'"))), errorMessage = Some(ErrorMessage(content = Text("Please enter a valid contact number")))))
     }else{
@@ -27,7 +27,7 @@
     }
     <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
     <hr>
-    <a class="govuk-link" data-module="govuk-button" href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.openUpdateClientPage">
+    <a class="govuk-link" data-module="govuk-button" href="@uk.gov.hmrc.examplefrontend.controllers.routes.UpdateClientController.updatePage">
         Cancel
     </a>
   }

@@ -32,7 +32,7 @@ class UpdateClientController @Inject()(
                                         implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
-  def openUpdateClientPage: Action[AnyContent] = Action async { implicit request =>
+  def updatePage: Action[AnyContent] = Action async { implicit request =>
     utils.loggedInCheckAsync({ client =>
       Future(Ok(updateClientPage(client)))
     })
