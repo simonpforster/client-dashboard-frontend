@@ -23,7 +23,7 @@ import play.api.http.Status._
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.Helpers.{contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties}
+import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, Utils, UserClientProperties}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
@@ -31,7 +31,7 @@ import uk.gov.hmrc.examplefrontend.views.html._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PropertyUpdateControllerSpec  extends AbstractTest{
+class PropertyUpdateControllerSpec extends AbstractTest {
 
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
@@ -39,12 +39,15 @@ class PropertyUpdateControllerSpec  extends AbstractTest{
   lazy val updateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
 
+  object utils extends Utils(mockDataConnector, error)
+
   object testUpdateClientController extends PropertyUpdateController(
-    mcc,
-    updateClientPropertyPage,
-    mockDataConnector,
-    error,
-    executionContext
+    mcc = mcc,
+    updateClientPropertyPage = updateClientPropertyPage,
+    error = error,
+    dataConnector = mockDataConnector,
+    ec = executionContext,
+    utils = utils
   )
 
   val fakeRequestProperty: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
@@ -58,14 +61,11 @@ class PropertyUpdateControllerSpec  extends AbstractTest{
 
   "Update Client Property GET" should {
     "return status OK" in {
+      when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
       val result: Future[Result] = testUpdateClientController.openUpdateClientProperty.apply(fakeRequestProperty
         .withSession(SessionKeys.crn -> testClient.crn))
       status(result) shouldBe OK
       contentType(result) shouldBe Some(contentTypeMatch)
-    }
-    "return status Redirect" in {
-      val result: Future[Result] = testUpdateClientController.openUpdateClientProperty.apply(fakeRequestProperty)
-      status(result) shouldBe SEE_OTHER
     }
   }
 
@@ -103,12 +103,6 @@ class PropertyUpdateControllerSpec  extends AbstractTest{
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.propertyNumber -> testClient.propertyNumber, UserClientProperties.postcode -> testClient.postcode))
         status(result) shouldBe NOT_FOUND
-      }
-    }
-    "return status redirect without crn" when {
-      "no crn is present" in {
-        val result: Future[Result] = testUpdateClientController.updateClientPropertySubmit().apply(fakeRequestSubmitProperty)
-        status(result) shouldBe SEE_OTHER
       }
     }
   }

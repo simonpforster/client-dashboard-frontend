@@ -26,6 +26,7 @@ case class Agent(arn: String)
 object Agent {
   implicit val format: OFormat[Agent] = Json.format[Agent]
 }
+
 object AgentForm {
   val form: Form[Agent] =
     Form(

@@ -18,10 +18,10 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, UserBusinessType, UserBusinessTypeForm}
+import uk.gov.hmrc.examplefrontend.models.{UserBusinessType, UserBusinessTypeForm}
 import uk.gov.hmrc.examplefrontend.views.html.UpdateBusinessTypePage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -33,22 +33,21 @@ class BusinessTypeUpdateController @Inject()(
                                               updateBusinessTypePage: UpdateBusinessTypePage,
                                               dataConnector: DataConnector,
                                               error: ErrorHandler,
+                                              utils: Utils,
                                               implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
-  def updateBusinessType(): Action[AnyContent] = Action { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
+  def updateBusinessType(): Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckAsync({ client =>
       val form = UserBusinessTypeForm.submitForm.fill(UserBusinessType(""))
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
-      Ok(updateBusinessTypePage(form, registeredClient))
-    } else Redirect(routes.LoginController.login())
+      Future(Ok(updateBusinessTypePage(form, client)))
+    })
   }
 
   def submitBusinessTypeUpdate: Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
+    utils.loggedInCheckAsync({ client =>
       UserBusinessTypeForm.submitForm.bindFromRequest().fold(formWithErrors =>
-        Future.successful(BadRequest(updateBusinessTypePage(formWithErrors, registeredClient))),
+        Future.successful(BadRequest(updateBusinessTypePage(formWithErrors, client))),
         success => {
           dataConnector.updateBusinessType(request.session.get(SessionKeys.crn).get, success.businessType).map {
             case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
@@ -65,9 +64,7 @@ class BusinessTypeUpdateController @Inject()(
           }
         }
       )
-    } else {
-      Future(Redirect(routes.HomePageController.homepage()))
-    }
+    })
   }
 
 }

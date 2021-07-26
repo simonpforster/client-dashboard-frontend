@@ -20,7 +20,7 @@ import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{charset, contentType, defaultAwaitTimeout, status}
-import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys}
+import uk.gov.hmrc.examplefrontend.common.UrlKeys
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 import scala.concurrent.Future
@@ -38,15 +38,9 @@ class HomePageControllerSpec extends AbstractTest {
   )
 
   "homepage() method" should {
-    "return Ok" in {
+    "return OK if not logged in" in {
       val result: Future[Result] = controller.homepage(fakeRequestHomepage)
       status(result) shouldBe OK
-    }
-
-    "return SEE_OTHER" in {
-      val result: Future[Result] = controller.homepage(fakeRequestHomepage.withSession(SessionKeys.crn -> testCRN))
-
-      status(result) shouldBe SEE_OTHER
     }
 
     "return HTML" in {

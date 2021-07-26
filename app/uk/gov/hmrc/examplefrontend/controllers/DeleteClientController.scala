@@ -18,7 +18,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.views.html.{DeleteAreYouSure, DeleteSuccess}
@@ -32,50 +32,31 @@ class DeleteClientController @Inject()(mcc: MessagesControllerComponents,
                                        deleteSuccess: DeleteSuccess,
                                        deleteAreYouSure: DeleteAreYouSure,
                                        error: ErrorHandler,
+                                       utils: Utils,
                                        implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
   def deleteClient(): Action[AnyContent] = Action async { implicit request =>
-    request.session.get(SessionKeys.crn) match {
-      case Some(value) =>
-        val response: Future[Boolean] = dataConnector.deleteClient(value)
-        response.map {
-          case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
-          case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
-        }.recover {
-          case _ => InternalServerError(error.standardErrorTemplate(
-            pageTitle = ErrorMessages.pageTitle,
-            heading = ErrorMessages.heading,
-            message = ErrorMessages.message))
-        }
-      case None => Future.successful(Redirect(routes.HomePageController.homepage()))
-    }
-  }
-
-  def areYouSure(): Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      dataConnector.readOne(request.session.get(SessionKeys.crn).get).map {
-        case Some(client) => Ok(deleteAreYouSure(client))
-        case _ => BadRequest(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message))
+    utils.loggedInCheckNoClient(request, { crn =>
+      val response: Future[Boolean] = dataConnector.deleteClient(crn)
+      response.map {
+        case true => Redirect(routes.DeleteClientController.deleteClientSuccessful())
+        case false => Redirect(routes.DashboardController.dashboardMain(), BAD_GATEWAY)
       }.recover {
         case _ => InternalServerError(error.standardErrorTemplate(
           pageTitle = ErrorMessages.pageTitle,
           heading = ErrorMessages.heading,
           message = ErrorMessages.message))
       }
-    } else {
-      Future.successful(Redirect(routes.HomePageController.homepage()))
-    }
+    })
   }
 
-  def deleteClientSuccessful(): Action[AnyContent] = Action { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      Ok(deleteSuccess()).withNewSession
-    } else {
-      Redirect(routes.HomePageController.homepage())
-    }
+  def areYouSure(): Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckAsync({ client => Future(Ok(deleteAreYouSure(client))) })
   }
+
+  def deleteClientSuccessful(): Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckNoClient(request, _ => Future(Ok(deleteSuccess()).withNewSession))
+  }
+
 }

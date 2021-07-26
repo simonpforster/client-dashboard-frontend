@@ -24,7 +24,7 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.Helpers.{contentAsString, contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties}
+import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
@@ -36,15 +36,18 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   lazy val updateBusinessTypePage: UpdateBusinessTypePage = app.injector.instanceOf[UpdateBusinessTypePage]
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
-  lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
 
+  object utils extends Utils(mockDataConnector, error)
+
   object testUpdateClientController extends BusinessTypeUpdateController(
-    mcc,
-    updateBusinessTypePage,
-    mockDataConnector,
-    error,
-    executionContext
+    mcc = mcc,
+    updateBusinessTypePage = updateBusinessTypePage,
+    error = error,
+    dataConnector = mockDataConnector,
+    utils = utils,
+    ec = executionContext
   )
 
   val fakeRequestBusinessType: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
@@ -78,10 +81,6 @@ class BusinessTypeUpdateControllerSpec extends AbstractTest {
 
   "submitBusinessTypeUpdate POST " should {
     "return status See_Other " when {
-      "no session/crn exists " in {
-        val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType)
-        status(result) shouldBe SEE_OTHER
-      }
       "session/crn exists, form without errors and updateBusinessType connector returns true" in {
         when(mockDataConnector.updateBusinessType(any(), any())) thenReturn Future.successful(true)
         val result: Future[Result] = testUpdateClientController.submitBusinessTypeUpdate(fakeRequestSubmitBusinessType

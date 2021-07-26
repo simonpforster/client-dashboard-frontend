@@ -21,7 +21,7 @@ import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 class ClientSpec extends AbstractTest {
-//  val testARN: String = "testArn"
+  //  val testARN: String = "testArn"
   val userPropertyString: String = testClient.propertyNumber + "/" + testClient.postcode
   val testClientJs: JsValue = Json.parse(
     s"""{
@@ -58,12 +58,12 @@ class ClientSpec extends AbstractTest {
     }
 
     "encode" should {
-      "turns two strings into one" in{
-        UserProperty(testClient.propertyNumber,testClient.postcode).encode() shouldBe userPropertyString
+      "turns two strings into one" in {
+        UserProperty(testClient.propertyNumber, testClient.postcode).encode() shouldBe userPropertyString
       }
     }
     "decode" should {
-      "turns one strings into two" in{
+      "turns one strings into two" in {
         UserProperty.decode(userPropertyString).propertyNumber shouldBe testClient.propertyNumber
         UserProperty.decode(userPropertyString).postcode shouldBe testClient.postcode
       }

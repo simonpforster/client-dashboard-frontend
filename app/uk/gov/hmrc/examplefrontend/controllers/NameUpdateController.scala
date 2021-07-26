@@ -18,7 +18,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{UserName, UserNameForm}
@@ -29,27 +29,25 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class NameUpdateController@Inject()(
-                                     mcc: MessagesControllerComponents,
-                                     nameUpdatePage: UpdateNamePage,
-                                     dataConnector: DataConnector,
-                                     error: ErrorHandler,
-                                     utils: Utils)
-  extends FrontendController(mcc) with I18nSupport{
+class NameUpdateController @Inject()(
+                                      mcc: MessagesControllerComponents,
+                                      nameUpdatePage: UpdateNamePage,
+                                      dataConnector: DataConnector,
+                                      error: ErrorHandler,
+                                      utils: Utils)
+  extends FrontendController(mcc) with I18nSupport {
 
-  def updateName(): Action[AnyContent] = Action { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      Ok(nameUpdatePage(UserNameForm.submitForm.fill(UserName(""))))
-    } else {
-      Redirect(routes.HomePageController.homepage())
-    }
+  def updateName(): Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckNoClient(request, { _ =>
+      Future(Ok(nameUpdatePage(UserNameForm.submitForm.fill(UserName("")))))
+    })
   }
 
   def updateNameSubmit(): Action[AnyContent] = Action.async { implicit request =>
     utils.loggedInCheckAsync(client => {
       UserNameForm.submitForm.bindFromRequest.fold({ formWithErrors =>
         Future(BadRequest(nameUpdatePage(formWithErrors)))
-      },{ success =>
+      }, { success =>
         dataConnector.updateClientName(client.crn, success.name).map {
           case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
           case false => ServiceUnavailable(error.standardErrorTemplate(

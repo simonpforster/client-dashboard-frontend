@@ -19,12 +19,11 @@ package uk.gov.hmrc.examplefrontend.controllers
 import play.api.data.Form
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, UserProperty, UserPropertyForm}
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, NOT_IMPLEMENTED, OK, SEE_OTHER, SERVICE_UNAVAILABLE}
-import uk.gov.hmrc.examplefrontend.views.html.{UpdateBusinessTypePage, UpdateClientPage, UpdateClientPropertyPage, UpdateNamePage}
+import uk.gov.hmrc.examplefrontend.models.{UserProperty, UserPropertyForm}
+import uk.gov.hmrc.examplefrontend.views.html.UpdateClientPropertyPage
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
@@ -35,24 +34,21 @@ class PropertyUpdateController @Inject()(
                                           updateClientPropertyPage: UpdateClientPropertyPage,
                                           dataConnector: DataConnector,
                                           error: ErrorHandler,
+                                          utils: Utils,
                                           implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
-  def openUpdateClientProperty: Action[AnyContent] = Action { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-    val form: Form[UserProperty] = UserPropertyForm.submitForm.fill(UserProperty("", ""))
-    val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
-    Ok(updateClientPropertyPage(form, registeredClient))
-    } else {
-      Redirect(routes.HomePageController.homepage())
-    }
+  def openUpdateClientProperty: Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckAsync({ client =>
+      val form: Form[UserProperty] = UserPropertyForm.submitForm.fill(UserProperty("", ""))
+      Future(Ok(updateClientPropertyPage(form, client)))
+    })
   }
 
   def updateClientPropertySubmit(): Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
+    utils.loggedInCheckAsync({ client =>
       UserPropertyForm.submitForm.bindFromRequest().fold({ formWithErrors =>
-        Future.successful(BadRequest(updateClientPropertyPage(formWithErrors, registeredClient)))
+        Future.successful(BadRequest(updateClientPropertyPage(formWithErrors, client)))
       }, { success =>
         dataConnector.updateProperyDetails(success.propertyNumber, success.postcode, request.session.get(SessionKeys.crn).get).map {
           case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
@@ -67,8 +63,6 @@ class PropertyUpdateController @Inject()(
             message = ErrorMessages.message))
         }
       })
-    } else {
-      Future.successful(Redirect(routes.HomePageController.homepage()))
-    }
+    })
   }
 }

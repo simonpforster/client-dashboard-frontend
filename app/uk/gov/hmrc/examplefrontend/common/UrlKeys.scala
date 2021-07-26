@@ -43,19 +43,27 @@ object UrlKeys {
   val updateProperty: String = "modify-client-property"
   val updateBusiness: String = "update-business-type"
 
-
   //Clients backend - routes
-  def readOneClient(crn:String): String = clients + crn
-  def addAgent(crn: String): String = clients + crn +"/add"
-  def removeAgent(crn: String): String = clients + crn +"/remove"
+  def readOneClient(crn: String): String = clients + crn
+
+  def addAgent(crn: String): String = clients + crn + "/add"
+
+  def removeAgent(crn: String): String = clients + crn + "/remove"
+
   def login(crn: String): String = clients + crn + "/login"
+
   def deleteClient(crn: String): String = clients + crn
+
   def updateClientName(crn: String): String = clients + crn + "/name"
-  def updateContactNumber(crn: String):String = clients + crn + "/contact-number"
-  def updateProperty(crn: String):String = clients + crn + "/property"
+
+  def updateContactNumber(crn: String): String = clients + crn + "/contact-number"
+
+  def updateProperty(crn: String): String = clients + crn + "/property"
+
   def updateBusiness(crn: String): String = clients + crn + "/business-type"
 
   //Agents backend - routes
   val agents: String = "/agents/"
-  def readAgent(arn:String):String = agents + arn + "/details"
+
+  def readAgent(arn: String): String = agents + arn + "/details"
 }
