@@ -63,7 +63,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
 
   "DataConnector" can {
     "delete" should {
-      "succesfully delete a client" in {
+      "successfully delete a client" in {
         stubDelete(
           url = UrlKeys.deleteClient(testClient.crn),
           status = NO_CONTENT,
@@ -124,7 +124,7 @@ class DataConnectorIt extends AnyWordSpec with Matchers with GuiceOneAppPerSuite
   }
 
   "login" should {
-    "succesfully receive a client" in {
+    "successfully receive a client" in {
       stubPost(
         url = UrlKeys.login(testClient.crn),
         status = OK,

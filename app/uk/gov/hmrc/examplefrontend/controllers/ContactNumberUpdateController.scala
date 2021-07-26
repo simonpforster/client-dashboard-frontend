@@ -18,10 +18,10 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
-import uk.gov.hmrc.examplefrontend.models.{Client, UserContactNumber, UserContactNumberForm}
+import uk.gov.hmrc.examplefrontend.models.{UserContactNumber, UserContactNumberForm}
 import uk.gov.hmrc.examplefrontend.views.html.UpdateContactNumber
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -33,22 +33,21 @@ class ContactNumberUpdateController @Inject()(
                                                updateContactNumberPage: UpdateContactNumber,
                                                dataConnector: DataConnector,
                                                error: ErrorHandler,
+                                               utils: Utils,
                                                implicit val ec: ExecutionContext)
-  extends FrontendController(mcc) with I18nSupport{
+  extends FrontendController(mcc) with I18nSupport {
 
-  def updateContactNumber(): Action[AnyContent] = Action{ implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
+  def updateContactNumber(): Action[AnyContent] = Action async { implicit request =>
+    utils.loggedInCheckAsync({ client =>
       val form = UserContactNumberForm.submitForm.fill(UserContactNumber(""))
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
-      Ok(updateContactNumberPage(form, registeredClient))
-    } else Redirect(routes.LoginController.login())
+      Future(Ok(updateContactNumberPage(form, client)))
+    })
   }
 
   def submitUpdatedContactNumber: Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      val registeredClient = Client(request.session.get(SessionKeys.crn).get, "", "", "", "", "", "")
+    utils.loggedInCheckAsync({ client =>
       UserContactNumberForm.submitForm.bindFromRequest().fold(
-        formWithErrors => Future.successful(BadRequest(updateContactNumberPage(formWithErrors, registeredClient))),
+        formWithErrors => Future.successful(BadRequest(updateContactNumberPage(formWithErrors, client))),
         success => {
           dataConnector.updateContactNumber(request.session.get(SessionKeys.crn).get, success.contact).map {
             case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
@@ -63,10 +62,7 @@ class ContactNumberUpdateController @Inject()(
               heading = ErrorMessages.heading,
               message = ErrorMessages.message))
           }
-        }
-      )
-    } else {
-      Future(Redirect(routes.HomePageController.homepage()))
-    }
+        })
+    })
   }
 }

@@ -58,12 +58,12 @@ class ClientSpec extends AbstractTest {
     }
 
     "encode" should {
-      "turns two strings into one" in{
-        UserProperty(testClient.propertyNumber,testClient.postcode).encode() shouldBe userPropertyString
+      "turns two strings into one" in {
+        UserProperty(testClient.propertyNumber, testClient.postcode).encode() shouldBe userPropertyString
       }
     }
     "decode" should {
-      "turns one strings into two" in{
+      "turns one strings into two" in {
         UserProperty.decode(userPropertyString).propertyNumber shouldBe testClient.propertyNumber
         UserProperty.decode(userPropertyString).postcode shouldBe testClient.postcode
       }

@@ -22,7 +22,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.examplefrontend.models.Client
 
-trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers with GuiceOneAppPerSuite{
+trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers with GuiceOneAppPerSuite {
 
   val testClient: Client = Client(
     crn = "testCrn",

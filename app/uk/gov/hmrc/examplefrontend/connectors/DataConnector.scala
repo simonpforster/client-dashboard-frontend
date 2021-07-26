@@ -116,7 +116,7 @@ class DataConnector @Inject()(ws: WSClient, implicit val ec: ExecutionContext) {
     }
   }
 
-  def removeArn(crn:String, arn:String): Future[Boolean] = {
+  def removeArn(crn: String, arn: String): Future[Boolean] = {
     val clientAgentPair = Json.obj(
       UserClientProperties.arn -> arn
     )

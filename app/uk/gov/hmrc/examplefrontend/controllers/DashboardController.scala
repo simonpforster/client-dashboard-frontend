@@ -18,7 +18,7 @@ package uk.gov.hmrc.examplefrontend.controllers
 
 import play.api.data.Form
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UserClientProperties}
+import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UserClientProperties, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{Agent, AgentForm}
@@ -33,107 +33,66 @@ class DashboardController @Inject()(mcc: MessagesControllerComponents,
                                     dashboardPage: DashboardPage,
                                     dataConnector: DataConnector,
                                     error: ErrorHandler,
+                                    utils: Utils,
                                     implicit val ec: ExecutionContext)
   extends FrontendController(mcc) {
 
   def dashboardMain: Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      dataConnector.readOne(request.session.get(SessionKeys.crn).get).map {
-        case Some(client) => Ok(dashboardPage(client, AgentForm.form.fill(Agent(""))))
-        case _ => BadRequest(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message))
-      }.recover {
-        case _ => InternalServerError(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message))
-      }
-    } else {
-      Future.successful(Redirect(routes.HomePageController.homepage()))
-    }
+    utils.loggedInCheckAsync({ client =>
+      Future(Ok(dashboardPage(client, AgentForm.form.fill(Agent("")))))
+    })
   }
 
   def arnSubmit: Action[AnyContent] = Action async { implicit request =>
-    if (request.session.get(SessionKeys.crn).isDefined) {
-      dataConnector.readOne(request.session.get(SessionKeys.crn).get).flatMap {
-        case Some(client) =>
-          val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
-          val formWithErrors: Form[Agent] = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
-          AgentForm.form.bindFromRequest.fold(
-            formWithErrors => {
-              Future.successful(BadRequest(dashboardPage(client, formWithErrors)))
-            },
-            success => {
-              dataConnector.checkArn(success).flatMap {
-                case true => dataConnector.addArn(client.crn, success.arn).map {
-                        case true => Ok(dashboardPage(client = client.copy(arn = Some(success.arn)), agentForm = emptyForm))
-                          .withSession(request.session + (SessionKeys.arn -> success.arn))
-                        case false => BadRequest(dashboardPage(client = client, agentForm = formWithErrors))
-                          .withSession(request.session)
-                  }.recover {
-                      case _ => InternalServerError(error.standardErrorTemplate(
-                        pageTitle = ErrorMessages.pageTitle,
-                        heading = ErrorMessages.heading,
-                        message = ErrorMessages.message))
-                  }
-                case false => Future.successful(NotFound(dashboardPage(client = client, agentForm = formWithErrors
-                  .withError(UserClientProperties.arn, "no"))))
-              }.recover {
-                case _ => InternalServerError(error.standardErrorTemplate(
-                  pageTitle = ErrorMessages.pageTitle,
-                  heading = ErrorMessages.heading,
-                  message = ErrorMessages.message))
-              }
-            })
-        case _ => Future.successful(BadRequest(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message)))
-
-      }.recover {
-        case _ => InternalServerError(error.standardErrorTemplate(
-          pageTitle = ErrorMessages.pageTitle,
-          heading = ErrorMessages.heading,
-          message = ErrorMessages.message))
-      }
-    } else {
-      Future.successful(Redirect(routes.HomePageController.homepage()))
-    }
+    utils.loggedInCheckAsync({ client =>
+      val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
+      val formWithErrors: Form[Agent] = AgentForm.form.fill(Agent("")).withGlobalError("NotFound")
+      AgentForm.form.bindFromRequest.fold(
+        formWithErrors => {
+          Future.successful(BadRequest(dashboardPage(client, formWithErrors)))
+        },
+        success => {
+          dataConnector.checkArn(success).flatMap {
+            case true => dataConnector.addArn(client.crn, success.arn).map {
+              case true => Ok(dashboardPage(client = client.copy(arn = Some(success.arn)), agentForm = emptyForm))
+                .withSession(request.session + (SessionKeys.arn -> success.arn))
+              case false => BadRequest(dashboardPage(client = client, agentForm = formWithErrors))
+                .withSession(request.session)
+            }.recover {
+              case _ => InternalServerError(error.standardErrorTemplate(
+                pageTitle = ErrorMessages.pageTitle,
+                heading = ErrorMessages.heading,
+                message = ErrorMessages.message))
+            }
+            case false => Future.successful(NotFound(dashboardPage(client = client, agentForm = formWithErrors
+              .withError(UserClientProperties.arn, "no"))))
+          }.recover {
+            case _ => InternalServerError(error.standardErrorTemplate(
+              pageTitle = ErrorMessages.pageTitle,
+              heading = ErrorMessages.heading,
+              message = ErrorMessages.message))
+          }
+        })
+    })
   }
 
-  def arnRemove: Action[AnyContent] = Action.async {
-    implicit request =>
-      val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
-      if (request.session.get(SessionKeys.crn).isDefined) {
-        dataConnector.readOne(request.session.get(SessionKeys.crn).get).flatMap{
-          case Some(client) => client.arn match {
-            case Some(arn) =>
-              dataConnector.removeArn(client.crn, arn).map {
-                case true => Ok(dashboardPage(client = client.copy(arn = None), agentForm = emptyForm))
-                case false => BadRequest(dashboardPage(client = client, agentForm = emptyForm))
-              }.recover {
-                case _ => InternalServerError(error.standardErrorTemplate(
-                  pageTitle = ErrorMessages.pageTitle,
-                  heading = ErrorMessages.heading,
-                  message = ErrorMessages.message))
-              }
-            case None => Future(NotFound(dashboardPage(client = client, agentForm = emptyForm))
-              .withSession(request.session))
+  def arnRemove: Action[AnyContent] = Action.async { implicit request =>
+    val emptyForm: Form[Agent] = AgentForm.form.fill(Agent(""))
+    utils.loggedInCheckAsync({ client =>
+      client.arn match {
+        case Some(arn) =>
+          dataConnector.removeArn(client.crn, arn).map {
+            case true => Ok(dashboardPage(client = client.copy(arn = None), agentForm = emptyForm))
+            case false => BadRequest(dashboardPage(client = client, agentForm = emptyForm))
+          }.recover {
+            case _ => InternalServerError(error.standardErrorTemplate(
+              pageTitle = ErrorMessages.pageTitle,
+              heading = ErrorMessages.heading,
+              message = ErrorMessages.message))
           }
-          case None => Future.successful(NotFound(error.standardErrorTemplate(
-            pageTitle = ErrorMessages.pageTitle,
-            heading = ErrorMessages.heading,
-            message = ErrorMessages.message)))
-        }.recover {
-          case _ => InternalServerError(error.standardErrorTemplate(
-            pageTitle = ErrorMessages.pageTitle,
-            heading = ErrorMessages.heading,
-            message = ErrorMessages.message))
-        }
-      } else {
-        Future(Redirect(routes.HomePageController.homepage()))
+        case None => Future(NotFound(dashboardPage(client = client, agentForm = emptyForm))
+          .withSession(request.session))
       }
+    })
   }
 }

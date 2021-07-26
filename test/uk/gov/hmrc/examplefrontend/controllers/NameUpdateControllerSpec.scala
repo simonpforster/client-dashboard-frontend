@@ -23,7 +23,7 @@ import play.api.http.Status._
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.Helpers.{defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties}
+import uk.gov.hmrc.examplefrontend.common.{SessionKeys, UrlKeys, UserClientProperties, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
@@ -34,16 +34,19 @@ import scala.concurrent.{ExecutionContext, Future}
 class NameUpdateControllerSpec extends AbstractTest {
 
   lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  lazy val updateNamePage: UpdateNamePage = app.injector.instanceOf[UpdateNamePage]
+  lazy val nameUpdatePage: UpdateNamePage = app.injector.instanceOf[UpdateNamePage]
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
-  lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+  val utils: Utils = new Utils(dataConnector = mockDataConnector, error = error)
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
+  lazy val updateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
 
   object testNameUpdateController extends NameUpdateController(
-    mcc,
-    updateNamePage,
-    mockDataConnector,
-    error
+    mcc = mcc,
+    nameUpdatePage = nameUpdatePage,
+    error = error,
+    dataConnector = mockDataConnector,
+    utils = utils
   )
 
   val newName = "updatedClientName"
@@ -59,15 +62,10 @@ class NameUpdateControllerSpec extends AbstractTest {
   "nameUpdate()" can {
     "successfully run" should {
       "return OK if crn in session" in {
+        when(mockDataConnector.readOne(any())).thenReturn(Future.successful(Some(testClient)))
         val result: Future[Result] = testNameUpdateController.updateName().apply(fakeRequestClientName
           .withSession(SessionKeys.crn -> testClient.crn))
-        when(mockDataConnector.readOne(any())).thenReturn(Future.successful(Some(testClient)))
         status(result) shouldBe OK
-      }
-
-      "redirect login if no crn in session" in {
-        val result: Future[Result] = testNameUpdateController.updateName().apply(fakeRequestClientName)
-        status(result) shouldBe SEE_OTHER
       }
     }
   }
@@ -75,6 +73,7 @@ class NameUpdateControllerSpec extends AbstractTest {
   "submitNameUpdate()" can {
     "successfully pass info in the session" should {
       "return OK and passes updateName in session" in {
+        when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(true))
         val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(SessionKeys.crn -> testClient.crn)
@@ -85,6 +84,7 @@ class NameUpdateControllerSpec extends AbstractTest {
 
     "fail with BAD REQUEST" should {
       "when no form is passed with" in {
+        when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(true))
         val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(SessionKeys.crn -> testClient.crn)
@@ -95,6 +95,7 @@ class NameUpdateControllerSpec extends AbstractTest {
 
     "fail with SERVICE UNAVAILABLE" should {
       "when update fails for unknown reason" in {
+        when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(false))
         val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(SessionKeys.crn -> testClient.crn)
@@ -113,6 +114,7 @@ class NameUpdateControllerSpec extends AbstractTest {
 
     "fail with NOT FOUND" should {
       "when RunTimeException thrown" in {
+        when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())) thenReturn Future.failed(new RuntimeException)
         val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(UserClientProperties.crn -> testClient.crn)
@@ -121,4 +123,5 @@ class NameUpdateControllerSpec extends AbstractTest {
       }
     }
   }
+
 }

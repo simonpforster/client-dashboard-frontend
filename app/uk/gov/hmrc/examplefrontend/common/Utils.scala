@@ -16,27 +16,51 @@
 
 package uk.gov.hmrc.examplefrontend.common
 
-import play.api.mvc.Results.Redirect
+import play.api.mvc.Results.{BadRequest, InternalServerError, Redirect}
 import play.api.mvc.{AnyContent, MessagesRequest, Result}
+import uk.gov.hmrc.examplefrontend.config.ErrorHandler
+import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.controllers.routes
+import uk.gov.hmrc.examplefrontend.models.Client
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object Utils {
+class Utils @Inject()(dataConnector: DataConnector,
+                      error: ErrorHandler) {
 
-	def loggedInCheckAsync(request: MessagesRequest[AnyContent],
-												 func:(String) => Future[Result]): Future[Result] = {
-		request.session.get(SessionKeys.crn) match {
-			case Some(reg) => func(reg)
-			case None => Future(Redirect(routes.HomePageController.homepage()))
-		}
-	}
-//	def loggedInCheck(request: MessagesRequest[AnyContent],
-//										func:(String) => Result): Result = {
-//		request.session.get(SessionKeys.crn) match {
-//			case Some(reg) => func(reg)
-//			case None => Redirect(routes.HomePageController.homepage())
-//		}
-//	}
+  def loggedInCheckAsync(func: Client => Future[Result])(implicit request: MessagesRequest[AnyContent]): Future[Result] = {
+    request.session.get(SessionKeys.crn) match {
+      case Some(reg) =>
+        dataConnector.readOne(reg).flatMap {
+          case Some(client) => func(client)
+          case None => Future(BadRequest(error.standardErrorTemplate(
+            pageTitle = ErrorMessages.pageTitle,
+            heading = ErrorMessages.heading,
+            message = ErrorMessages.message)))
+        }.recover { case _ => InternalServerError(error.standardErrorTemplate(
+          pageTitle = ErrorMessages.pageTitle,
+          heading = ErrorMessages.heading,
+          message = ErrorMessages.message))
+        }
+      case None => Future(Redirect(routes.HomePageController.homepage()))
+    }
+  }
+
+  def loggedInCheckNoClient(request: MessagesRequest[AnyContent],
+                            func: String => Future[Result]): Future[Result] = {
+    request.session.get(SessionKeys.crn) match {
+      case Some(reg) => func(reg)
+      case None => Future(Redirect(routes.HomePageController.homepage()))
+    }
+  }
+
+  def notLoggedInCheck(request: MessagesRequest[AnyContent],
+                       func: String => Future[Result]): Future[Result] = {
+    request.session.get(SessionKeys.crn) match {
+      case Some(reg) => Future(Redirect(routes.DashboardController.dashboardMain()))
+      case None => func("")
+    }
+  }
 }
