@@ -7,21 +7,22 @@
 @layout(pageTitle = Some("User Deleted")) {
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper govuk-main-wrapper--l" id="Logout-Success" role="main">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-panel govuk-panel--confirmation">
-                    <h1 class="govuk-panel__title">
-                        Deleted Client Successfully
-                    </h1>
-                </div>
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+                Successful
+            </h1>
+            <div class="govuk-panel__body">
+                Your Account has been successfully deleted
             </div>
         </div>
+        <h2 class="govuk-heading-m">What happens next</h2>
+        Now your account has been successfully deleted, in order to access the service again you will need to re-register.
     </main>
     <div class="govuk-button-group">
     </div>
 </div>
-<a class="govuk-button" id="submit" data-module="govuk-button"
+<a  id="submit" data-module="govuk-button"
    href="@uk.gov.hmrc.examplefrontend.controllers.routes.HomePageController.homepage()">
-    Continue
+    Continue to homepage
 </a>
 }

@@ -34,6 +34,12 @@ trait AbstractTest extends AnyWordSpec with BeforeAndAfter with Matchers with Gu
     businessType = "testBusinessType",
     arn = Some("testArn"))
 
+  val headerKey: String = "Content-Type"
+  val contentTypeMatch: String = "text/html"
+  val charsetMatch: String = "utf-8"
+  val testCRN: String = "testCrn"
+  val testARN: String = "testArn"
+  val testPassword: String = "12345"
 }
 
 

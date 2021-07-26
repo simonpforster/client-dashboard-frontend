@@ -21,7 +21,7 @@ import uk.gov.hmrc.examplefrontend.common.UserClientProperties
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
 
 class ClientSpec extends AbstractTest {
-  val testARN: String = "testArn"
+//  val testARN: String = "testArn"
   val userPropertyString: String = testClient.propertyNumber + "/" + testClient.postcode
   val testClientJs: JsValue = Json.parse(
     s"""{

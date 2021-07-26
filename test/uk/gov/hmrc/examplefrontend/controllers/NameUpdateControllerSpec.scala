@@ -49,26 +49,27 @@ object testNameUpdateController extends NameUpdateController(
   utils = utils
 )
 
-  val fakeRequestSubmitUpdate: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
-    method = "POST",
-    path = UrlKeys.updateClientName(testClient.crn))
-
-  val fakeRequestUpdate: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
-    method = "GET",
-    path = UrlKeys.updateClientName(testClient.crn))
-
   val newName = "updatedClientName"
+  val fakeRequestClientName: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.updateClientName
+  )
+  val fakeRequestSubmitClientName: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "POST",
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.updateClientName
+  )
 
   "nameUpdate()" can {
     "successfully run" should {
       "return OK if crn in session" in {
-        val result: Future[Result] = testNameUpdateController.updateName()(fakeRequestUpdate.withSession(SessionKeys.crn -> testClient.crn))
+        val result: Future[Result] = testNameUpdateController.updateName().apply(fakeRequestClientName
+          .withSession(SessionKeys.crn -> testClient.crn))
         when(mockDataConnector.readOne(any())).thenReturn(Future.successful(Some(testClient)))
         status(result) shouldBe OK
       }
 
       "redirect login if no crn in session" in {
-        val result: Future[Result] = testNameUpdateController.updateName()(fakeRequestUpdate)
+        val result: Future[Result] = testNameUpdateController.updateName().apply(fakeRequestClientName)
         status(result) shouldBe SEE_OTHER
       }
     }
@@ -79,7 +80,7 @@ object testNameUpdateController extends NameUpdateController(
       "return OK and passes updateName in session" in {
         when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(true))
-        val result: Future[Result] = testNameUpdateController.updateNameSubmit()(fakeRequestSubmitUpdate
+        val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.name -> newName))
         status(result) shouldBe SEE_OTHER
@@ -90,7 +91,7 @@ object testNameUpdateController extends NameUpdateController(
       "when no form is passed with" in {
         when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(true))
-        val result: Future[Result] = testNameUpdateController.updateNameSubmit()(fakeRequestSubmitUpdate
+        val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.name -> ""))
         status(result) shouldBe BAD_REQUEST
@@ -101,7 +102,7 @@ object testNameUpdateController extends NameUpdateController(
       "when update fails for unknown reason" in {
         when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())).thenReturn(Future(false))
-        val result: Future[Result] = testNameUpdateController.updateNameSubmit()(fakeRequestSubmitUpdate
+        val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.name -> newName))
         status(result) shouldBe SERVICE_UNAVAILABLE
@@ -110,7 +111,7 @@ object testNameUpdateController extends NameUpdateController(
 
     "fail with BAD GATEWAY" should {
       "when accessed with no crn" in {
-        val result: Future[Result] = testNameUpdateController.updateNameSubmit()(fakeRequestSubmitUpdate
+        val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
           .withFormUrlEncodedBody(UserClientProperties.name -> newName))
         status(result) shouldBe SEE_OTHER
       }
@@ -120,8 +121,8 @@ object testNameUpdateController extends NameUpdateController(
       "when RunTimeException thrown" in {
         when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
         when(mockDataConnector.updateClientName(any(), any())) thenReturn Future.failed(new RuntimeException)
-        val result: Future[Result] = testNameUpdateController.updateNameSubmit()(fakeRequestSubmitUpdate
-          .withSession(SessionKeys.crn -> testClient.crn)
+        val result: Future[Result] = testNameUpdateController.updateNameSubmit().apply(fakeRequestSubmitClientName
+          .withSession(UserClientProperties.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.name -> newName))
         status(result) shouldBe NOT_FOUND
       }
