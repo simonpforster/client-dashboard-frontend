@@ -57,6 +57,12 @@ class DeleteControllerSpec extends AbstractTest {
     method = "GET",
     path = UrlKeys.deleteClient(testClient.crn))
 
+  object Utils extends Utils(dataConnector = mockDataConnector, error = error)
+
+  private val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
+    method = "GET",
+    path = UrlKeys.deleteClient(testClient.crn))
+
   private val controller = new DeleteClientController(
     mcc = mcc,
     dataConnector = mockDataConnector,

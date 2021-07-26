@@ -39,6 +39,7 @@ class HomePageControllerSpec extends AbstractTest {
   private val controller = app.injector.instanceOf[HomePageController]
 
 
+
   "homepage() method" should {
     "return OK if not logged in" in {
       val result: Future[Result] = controller.homepage(fakeRequestHomepage)
