@@ -44,13 +44,13 @@ class BusinessTypeUpdateController @Inject()(
     })
   }
 
-  def submitBusinessTypeUpdate: Action[AnyContent] = Action async { implicit request =>
+  def updateBusinessTypeSubmit: Action[AnyContent] = Action async { implicit request =>
     utils.loggedInCheckAsync({ client =>
       UserBusinessTypeForm.submitForm.bindFromRequest().fold(formWithErrors =>
         Future.successful(BadRequest(updateBusinessTypePage(formWithErrors, client))),
         success => {
           dataConnector.updateBusinessType(request.session.get(SessionKeys.crn).get, success.businessType).map {
-            case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
+            case true => Redirect(routes.UpdateClientController.updatePage())
             case false => NotImplemented(error.standardErrorTemplate(
               pageTitle = ErrorMessages.pageTitle,
               heading = ErrorMessages.heading,

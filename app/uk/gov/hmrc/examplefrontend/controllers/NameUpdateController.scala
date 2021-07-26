@@ -38,18 +38,18 @@ class NameUpdateController @Inject()(
   extends FrontendController(mcc) with I18nSupport {
 
   def updateName(): Action[AnyContent] = Action async { implicit request =>
-    utils.loggedInCheckNoClient(request, { _ =>
-      Future(Ok(nameUpdatePage(UserNameForm.submitForm.fill(UserName("")))))
+    utils.loggedInCheckAsync({ client =>
+      Future(Ok(nameUpdatePage(UserNameForm.submitForm.fill(UserName("")), client)))
     })
   }
 
   def updateNameSubmit(): Action[AnyContent] = Action.async { implicit request =>
     utils.loggedInCheckAsync(client => {
       UserNameForm.submitForm.bindFromRequest.fold({ formWithErrors =>
-        Future(BadRequest(nameUpdatePage(formWithErrors)))
+        Future(BadRequest(nameUpdatePage(formWithErrors, client)))
       }, { success =>
         dataConnector.updateClientName(client.crn, success.name).map {
-          case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
+          case true => Redirect(routes.UpdateClientController.updatePage())
           case false => ServiceUnavailable(error.standardErrorTemplate(
             pageTitle = ErrorMessages.pageTitle,
             heading = ErrorMessages.heading,

@@ -50,18 +50,18 @@ class UpdateClientControllerSpec extends AbstractTest {
   val newName = "updatedClientName"
   val fakeRequestClientPage: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(
     method = "GET",
-    path = UrlKeys.host + UrlKeys.client + UrlKeys.modifyClient
+    path = UrlKeys.host + UrlKeys.client + UrlKeys.updateClientPage
   )
 
-  "OpenUpdateClientPage" should {
+  "updatePage GET" should {
     "return status Ok" in {
       when(mockDataConnector.readOne(any()))
         .thenReturn(Future.successful(Some(testClient)))
-      val result: Future[Result] = testUpdateClientController.openUpdateClientPage(fakeRequestClientPage
+      val result: Future[Result] = testUpdateClientController.updatePage(fakeRequestClientPage
         .withSession(SessionKeys.crn -> testClient.crn))
       status(result) shouldBe OK
       contentType(result) shouldBe Some("text/html")
-      contentAsString(result) should include("Modify Account")
+      contentAsString(result) should include("Update Account")
     }
   }
 }

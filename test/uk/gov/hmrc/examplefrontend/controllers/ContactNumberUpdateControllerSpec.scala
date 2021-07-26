@@ -75,7 +75,7 @@ class ContactNumberUpdateControllerSpec extends AbstractTest {
   "submitUpdatedContactNumber() POST" should {
     "return status BadRequest" when {
       "form with errors & with session(logged in)" in {
-        val result = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber
+        val result = testUpdateClientController.updateContactNumberSubmit(fakeRequestSubmitContactNumber
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.contactNumber -> ""))
         status(result) shouldBe Status.BAD_REQUEST
@@ -85,7 +85,7 @@ class ContactNumberUpdateControllerSpec extends AbstractTest {
     "return Internal server error" when {
       "update contact number fails" in {
         when(mockDataConnector.updateContactNumber(any(), any())) thenReturn Future.failed(new RuntimeException)
-        val result: Future[Result] = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber
+        val result: Future[Result] = testUpdateClientController.updateContactNumberSubmit(fakeRequestSubmitContactNumber
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.contactNumber -> testClient.contactNumber))
         status(result) shouldBe INTERNAL_SERVER_ERROR
@@ -94,7 +94,7 @@ class ContactNumberUpdateControllerSpec extends AbstractTest {
     "return status SeeOther" when {
       "form without errors & with session(logged in) & updateContactNumber connector returns true" in {
         when(mockDataConnector.updateContactNumber(any(), any())) thenReturn Future.successful(true)
-        val result: Future[Result] = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber
+        val result: Future[Result] = testUpdateClientController.updateContactNumberSubmit(fakeRequestSubmitContactNumber
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.contactNumber -> testClient.contactNumber))
         status(result) shouldBe SEE_OTHER
@@ -104,7 +104,7 @@ class ContactNumberUpdateControllerSpec extends AbstractTest {
     "return status NotImplemented" when {
       "form without errors & with session(logged in) & updateContactNumber connector returns false" in {
         when(mockDataConnector.updateContactNumber(any(), any())) thenReturn Future.successful(false)
-        val result: Future[Result] = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber
+        val result: Future[Result] = testUpdateClientController.updateContactNumberSubmit(fakeRequestSubmitContactNumber
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.contactNumber -> testClient.contactNumber))
         status(result) shouldBe NOT_IMPLEMENTED

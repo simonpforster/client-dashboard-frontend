@@ -2,7 +2,7 @@
 @this(layout: Layout, govukInput : GovukInput, errorSummary : GovukErrorSummary )
 @(client: Client)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some("Modify Account"), Some(client)) {
+@layout(pageTitle = Some("Update Account"), Some(client)) {
 <a class="govuk-back-link" data-module="govuk-button"
    href="@uk.gov.hmrc.examplefrontend.controllers.routes.DashboardController.dashboardMain">
     Back
@@ -60,7 +60,7 @@
                 </dd>
                 <dd class="govuk-summary-list__actions">
 
-                    <a class="govuk-link" href="@uk.gov.hmrc.examplefrontend.controllers.routes.PropertyUpdateController.openUpdateClientProperty">
+                    <a class="govuk-link" href="@uk.gov.hmrc.examplefrontend.controllers.routes.PropertyUpdateController.updateProperty">
 
                         Change<span class="govuk-visually-hidden">Property Details</span>
                     </a>

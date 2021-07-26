@@ -41,13 +41,13 @@ class NameUpdateControllerSpec extends AbstractTest {
   implicit lazy val executionContext: ExecutionContext = Helpers.stubControllerComponents().executionContext
   lazy val updateClientPropertyPage: UpdateClientPropertyPage = app.injector.instanceOf[UpdateClientPropertyPage]
 
-object testNameUpdateController extends NameUpdateController(
-  mcc = mcc,
-  nameUpdatePage = nameUpdatePage,
-  error = error,
-  dataConnector = mockDataConnector,
-  utils = utils
-)
+  object testNameUpdateController extends NameUpdateController(
+    mcc = mcc,
+    nameUpdatePage = nameUpdatePage,
+    error = error,
+    dataConnector = mockDataConnector,
+    utils = utils
+  )
 
   val newName = "updatedClientName"
   val fakeRequestClientName: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(

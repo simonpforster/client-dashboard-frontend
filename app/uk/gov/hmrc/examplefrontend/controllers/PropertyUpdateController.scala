@@ -38,20 +38,20 @@ class PropertyUpdateController @Inject()(
                                           implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
-  def openUpdateClientProperty: Action[AnyContent] = Action async { implicit request =>
+  def updateProperty: Action[AnyContent] = Action async { implicit request =>
     utils.loggedInCheckAsync({ client =>
       val form: Form[UserProperty] = UserPropertyForm.submitForm.fill(UserProperty("", ""))
       Future(Ok(updateClientPropertyPage(form, client)))
     })
   }
 
-  def updateClientPropertySubmit(): Action[AnyContent] = Action async { implicit request =>
+  def updatePropertySubmit(): Action[AnyContent] = Action async { implicit request =>
     utils.loggedInCheckAsync({ client =>
       UserPropertyForm.submitForm.bindFromRequest().fold({ formWithErrors =>
         Future.successful(BadRequest(updateClientPropertyPage(formWithErrors, client)))
       }, { success =>
         dataConnector.updateProperyDetails(success.propertyNumber, success.postcode, request.session.get(SessionKeys.crn).get).map {
-          case true => Redirect(routes.UpdateClientController.openUpdateClientPage())
+          case true => Redirect(routes.UpdateClientController.updatePage())
           case false => NotImplemented(error.standardErrorTemplate(
             pageTitle = ErrorMessages.pageTitle,
             heading = ErrorMessages.heading,
