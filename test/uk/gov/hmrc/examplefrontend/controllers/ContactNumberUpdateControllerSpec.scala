@@ -77,14 +77,14 @@ class ContactNumberUpdateControllerSpec extends AbstractTest {
       "form with errors & with session(logged in)" in {
         val result = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber
           .withSession(SessionKeys.crn -> testClient.crn)
-          .withFormUrlEncodedBody(UserClientProperties.contactNumber->""))
+          .withFormUrlEncodedBody(UserClientProperties.contactNumber -> ""))
         status(result) shouldBe Status.BAD_REQUEST
       }
     }
 
     "return Internal server error" when {
       "update contact number fails" in {
-        when(mockDataConnector.updateContactNumber(any(),any())) thenReturn Future.failed(new RuntimeException)
+        when(mockDataConnector.updateContactNumber(any(), any())) thenReturn Future.failed(new RuntimeException)
         val result: Future[Result] = testUpdateClientController.submitUpdatedContactNumber(fakeRequestSubmitContactNumber
           .withSession(SessionKeys.crn -> testClient.crn)
           .withFormUrlEncodedBody(UserClientProperties.contactNumber -> testClient.contactNumber))

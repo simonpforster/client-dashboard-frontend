@@ -49,7 +49,6 @@ class DeleteControllerSpec extends AbstractTest {
   lazy val mockDataConnector: DataConnector = mock[DataConnector]
   lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  lazy val mockDataConnector: DataConnector = mock[DataConnector]
 
   object Utils extends Utils(dataConnector = mockDataConnector, error = error)
 

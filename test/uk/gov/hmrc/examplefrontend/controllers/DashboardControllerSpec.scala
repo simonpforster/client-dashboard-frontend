@@ -68,7 +68,7 @@ class DashboardControllerSpec extends AbstractTest {
     "return status Ok" in {
       when(mockDataConnector.readOne(any())) thenReturn Future(Some(testClient))
       val result: Future[Result] = testDashboardController.dashboardMain(fakeRequestDashboard
-        .withSession(SessionKeys.crn->testClient.crn))
+        .withSession(SessionKeys.crn -> testClient.crn))
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some(contentTypeMatch)
       contentAsString(result) should include("Dashboard")

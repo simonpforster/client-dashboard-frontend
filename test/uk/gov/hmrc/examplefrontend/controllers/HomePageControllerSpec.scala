@@ -36,7 +36,6 @@ class HomePageControllerSpec extends AbstractTest {
     method = "GET",
     path = UrlKeys.registrationNI
   )
-  private val controller = app.injector.instanceOf[HomePageController]
 
 
   "homepage() method" should {
