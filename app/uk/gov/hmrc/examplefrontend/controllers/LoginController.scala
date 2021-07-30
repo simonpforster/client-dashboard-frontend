@@ -23,7 +23,7 @@ import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, Utils}
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.models.{User, UserForm}
-import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
+import uk.gov.hmrc.examplefrontend.views.html.{HomePage, LoginPage}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.{Inject, Singleton}
@@ -34,9 +34,9 @@ class LoginController @Inject()(
                                  mcc: MessagesControllerComponents,
                                  loginPage: LoginPage,
                                  dataConnector: DataConnector,
-                                 logoutSuccessPage: LogoutSuccess,
                                  error: ErrorHandler,
                                  utils: Utils,
+                                 home:HomePage,
                                  implicit val ec: ExecutionContext)
   extends FrontendController(mcc) with I18nSupport {
 
@@ -47,7 +47,7 @@ class LoginController @Inject()(
 
   def logOut: Action[AnyContent] = Action async { implicit request =>
     utils.loggedInCheckNoClient(request, _ =>
-      Future(Ok(logoutSuccessPage()).withNewSession)
+      Future(Ok(home()).withNewSession)
     )
   }
 
