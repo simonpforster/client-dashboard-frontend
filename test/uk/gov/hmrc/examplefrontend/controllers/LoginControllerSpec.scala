@@ -27,7 +27,7 @@ import uk.gov.hmrc.examplefrontend.common.{ErrorMessages, SessionKeys, UrlKeys, 
 import uk.gov.hmrc.examplefrontend.config.ErrorHandler
 import uk.gov.hmrc.examplefrontend.connectors.DataConnector
 import uk.gov.hmrc.examplefrontend.helpers.AbstractTest
-import uk.gov.hmrc.examplefrontend.views.html.{LoginPage, LogoutSuccess}
+import uk.gov.hmrc.examplefrontend.views.html.{HomePage, LoginPage}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,7 +35,7 @@ class LoginControllerSpec extends AbstractTest {
   implicit lazy val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   implicit lazy val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
   implicit lazy val loginPage: LoginPage = app.injector.instanceOf[LoginPage]
-  implicit lazy val logoutSuccess: LogoutSuccess = app.injector.instanceOf[LogoutSuccess]
+  implicit lazy val home: HomePage = app.injector.instanceOf[HomePage]
   implicit lazy val error: ErrorHandler = app.injector.instanceOf[ErrorHandler]
   implicit lazy val utils: Utils = app.injector.instanceOf[Utils]
   val testPass: String = "12345"
@@ -46,7 +46,7 @@ class LoginControllerSpec extends AbstractTest {
     mcc = mcc,
     loginPage = loginPage,
     dataConnector = connector,
-    logoutSuccessPage = logoutSuccess,
+    home = home,
     error = error,
     utils = utils,
     ec = executionContext)
@@ -82,7 +82,7 @@ class LoginControllerSpec extends AbstractTest {
       val result: Future[Result] = controller.logOut(fakeRequestLogout.withSession(SessionKeys.crn -> testClient.crn))
       status(result) shouldBe OK
       val doc: Document = Jsoup.parse(contentAsString(result))
-      Option(doc.getElementById("Logout-Success")).isDefined shouldBe true
+      Option(doc.getElementById("home")).isDefined shouldBe true
     }
 
     "return SEE_OTHER" in {
