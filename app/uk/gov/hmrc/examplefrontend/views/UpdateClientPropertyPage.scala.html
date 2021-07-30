@@ -25,9 +25,9 @@ title = Text(messages("Ensure both fields are completed"))))
 @govukInput(Input(id = "property-number", name = "propertyNumber", value = Some(form.data("propertyNumber")), hint = Some(Hint(content = Text("The house number you live at, for example - '103b'"))), label = Label(isPageHeading = true, classes = "govuk-label--l, name, govuk-input-error", content = Text("Property Number:"))))
 }
 @if(form.errors("postcode").nonEmpty){
-@govukInput(Input(id = "postcode", name = "postcode", value = Some(form.data("postcode")), label = Label(content = Text("Postcode:")), hint = Some(Hint(content = Text("The postcode where you live, for example - 'HA8 N3Y'"))), errorMessage = Some(ErrorMessage(content = Text("Please provide a valid postcode")))))
+@govukInput(Input(id = "postcode", name = "postcode", value = Some(form.data("postcode")), label = Label(content = Text("Postcode:")), hint = Some(Hint(content = Text("The postcode where you live, for example - 'HA8 3NY'"))), errorMessage = Some(ErrorMessage(content = Text("Please provide a valid postcode")))))
 }else{
-@govukInput(Input(id = "postcode", name = "postcode", value = Some(form.data("postcode")), hint = Some(Hint(content = Text("The postcode where you live, for example - 'HA8 N3Y'"))), label = Label(isPageHeading = true, classes = "govuk-label--l, name, govuk-input-error", content = Text("Postcode:"))))
+@govukInput(Input(id = "postcode", name = "postcode", value = Some(form.data("postcode")), hint = Some(Hint(content = Text("The postcode where you live, for example - 'HA8 3NY'"))), label = Label(isPageHeading = true, classes = "govuk-label--l, name, govuk-input-error", content = Text("Postcode:"))))
 }
 <button class="govuk-button" id="submit" data-module="govuk-button" type="submit">Save and continue</button>
 
